@@ -37,20 +37,31 @@
         margin-bottom: 12px;
     }
 
-    .layout {
-        display: grid;
-        grid-template-columns: 1.3fr 1fr;
-        gap: 14px;
+    /* 상단 탭: 게임 / 랭킹 */
+    .top-tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 10px;
     }
-    @media (max-width: 760px) {
-        .layout {
-            grid-template-columns: 1fr;
-        }
-        .card {
-            padding: 14px 12px 18px;
-        }
+    .top-tab {
+        flex: 1;
+        border-radius: 999px;
+        border: 1px solid #33364a;
+        background: #0b1020;
+        color: #c7d2fe;
+        padding: 7px 0;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+    .top-tab.active {
+        background: linear-gradient(120deg, #4f46e5, #ec4899);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 6px 18px rgba(79,70,229,0.6);
     }
 
+    /* 공통 버튼 & 인풋 등 */
     .mode-tabs {
         display: flex;
         gap: 6px;
@@ -164,7 +175,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     .controls-row .btn {
         flex: 1;
@@ -174,6 +185,29 @@
         .controls-row .btn {
             flex: 0 0 auto;
         }
+    }
+
+    .nickname-row {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 0;
+        margin-top: 2px;
+        align-items: center;
+        font-size: 12px;
+    }
+    #nicknameInput {
+        flex: 1;
+        padding: 6px 8px;
+        border-radius: 999px;
+        border: 1px solid #4b5563;
+        background: #020617;
+        color: #f9fafb;
+        font-size: 12px;
+    }
+    #nicknameInput:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 1px #6366f1;
     }
 
     /* 색 패턴 보드: 정사각형 비율 유지 */
@@ -225,13 +259,14 @@
         pointer-events: none; /* 클릭 완전 차단 */
     }
 
-    /* 랭킹 영역 */
+    /* 랭킹 화면 스타일 */
     .leaderboard {
         border-radius: 16px;
         background: #020617;
         padding: 10px 12px 12px;
         border: 1px solid #1f2933;
         font-size: 12px;
+        margin-top: 6px;
     }
     .leaderboard-title {
         display: flex;
@@ -290,27 +325,6 @@
         border-color: #6366f1;
     }
 
-    .nickname-row {
-        display: flex;
-        gap: 4px;
-        margin-bottom: 6px;
-        align-items: center;
-    }
-    #nicknameInput {
-        flex: 1;
-        padding: 6px 8px;
-        border-radius: 999px;
-        border: 1px solid #4b5563;
-        background: #020617;
-        color: #f9fafb;
-        font-size: 12px;
-    }
-    #nicknameInput:focus {
-        outline: none;
-        border-color: #6366f1;
-        box-shadow: 0 0 0 1px #6366f1;
-    }
-
     table {
         width: 100%;
         border-collapse: collapse;
@@ -330,6 +344,11 @@
     tr:nth-child(even) td {
         background: rgba(15,23,42,0.6);
     }
+
+    /* 뷰 전환용 */
+    #gameView, #rankView {
+        margin-top: 6px;
+    }
 </style>
 </head>
 
@@ -339,52 +358,67 @@
     <h1>두뇌 기억력 게임</h1>
     <div class="subtitle">숫자 기억 + 색 패턴 + 글로벌 랭킹 (PC/모바일 지원)</div>
 
-    <div class="layout">
-        <!-- 왼쪽: 게임 영역 -->
-        <div>
-            <div class="mode-tabs">
-                <button class="mode-btn active" id="btnModeNumber">🧮 숫자 기억</button>
-                <button class="mode-btn" id="btnModeColor">🎨 색 패턴</button>
-            </div>
+    <!-- 상단 탭: 게임 / 랭킹 -->
+    <div class="top-tabs">
+        <button class="top-tab active" id="tabGame">게임</button>
+        <button class="top-tab" id="tabRank">랭킹</button>
+    </div>
 
-            <div class="status-row">
-                <span>모드: <strong id="modeLabel">숫자 기억</strong></span>
-                <span>레벨: <strong id="levelLabel">1</strong></span>
-                <span class="best">내 최고레벨: <strong id="bestLabel">0</strong></span>
-            </div>
+    <!-- 🎮 게임 화면 -->
+    <div id="gameView">
+        <div class="mode-tabs">
+            <button class="mode-btn active" id="btnModeNumber">🧮 숫자 기억</button>
+            <button class="mode-btn" id="btnModeColor">🎨 색 패턴</button>
+        </div>
 
-            <div class="panel">
-                <div class="panel-inner" id="panelNumber">
-                    <div id="sequenceText"></div>
-                    <div id="message">게임 시작을 누르면 숫자가 잠깐 표시됩니다.</div>
+        <div class="status-row">
+            <span>모드: <strong id="modeLabel">숫자 기억</strong></span>
+            <span>레벨: <strong id="levelLabel">1</strong></span>
+            <span class="best">내 최고레벨: <strong id="bestLabel">0</strong></span>
+        </div>
 
-                    <div class="input-row" id="numberInputRow" style="display:none;">
-                        <input type="text" id="numberInput" placeholder="입력">
-                        <button class="btn btn-primary" id="btnSubmitNumber">제출</button>
-                    </div>
-                </div>
+        <div class="panel">
+            <div class="panel-inner" id="panelNumber">
+                <div id="sequenceText"></div>
+                <div id="message">게임 시작을 누르면 숫자가 잠깐 표시됩니다.</div>
 
-                <div class="panel-inner" id="panelColor" style="display:none;">
-                    <div id="messageColor">게임 시작을 누르면 패턴이 표시됩니다.</div>
-                    <div class="color-board-wrapper">
-                        <div class="color-board">
-                            <div class="color-pad pad-green" data-idx="0"><span>1</span></div>
-                            <div class="color-pad pad-red" data-idx="1"><span>2</span></div>
-                            <div class="color-pad pad-yellow" data-idx="2"><span>3</span></div>
-                            <div class="color-pad pad-blue" data-idx="3"><span>4</span></div>
-                        </div>
-                    </div>
+                <div class="input-row" id="numberInputRow" style="display:none;">
+                    <input type="text" id="numberInput" placeholder="입력">
+                    <button class="btn btn-primary" id="btnSubmitNumber">제출</button>
                 </div>
             </div>
 
-            <div class="controls-row">
-                <button class="btn btn-primary" id="btnStart">게임 시작 / 다음 라운드</button>
-                <button class="btn btn-ghost" id="btnStartBest">최고레벨에서 재도전</button>
-                <button class="btn btn-ghost" id="btnReset">내 기록 초기화</button>
+            <div class="panel-inner" id="panelColor" style="display:none;">
+                <div id="messageColor">게임 시작을 누르면 패턴이 표시됩니다.</div>
+                <div class="color-board-wrapper">
+                    <div class="color-board">
+                        <div class="color-pad pad-green" data-idx="0"><span>1</span></div>
+                        <div class="color-pad pad-red" data-idx="1"><span>2</span></div>
+                        <div class="color-pad pad-yellow" data-idx="2"><span>3</span></div>
+                        <div class="color-pad pad-blue" data-idx="3"><span>4</span></div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 오른쪽: 랭킹 영역 -->
+        <div class="controls-row">
+            <button class="btn btn-primary" id="btnStart">게임 시작 / 다음 라운드</button>
+            <button class="btn btn-ghost" id="btnStartBest">최고레벨에서 재도전</button>
+            <button class="btn btn-ghost" id="btnReset">내 기록 초기화</button>
+        </div>
+
+        <div class="nickname-row">
+            <span style="white-space:nowrap;">닉네임</span>
+            <input id="nicknameInput" placeholder="예: 시호">
+            <button class="btn btn-ghost" id="btnSaveName" style="padding:5px 8px;font-size:11px;">저장</button>
+        </div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
+            ※ 실패 시 현재 레벨이 자동으로 서버에 저장되고 랭킹 탭에서 확인할 수 있어요.
+        </div>
+    </div>
+
+    <!-- 📊 랭킹 화면 -->
+    <div id="rankView" style="display:none;">
         <div class="leaderboard">
             <div class="leaderboard-title">
                 <h2>랭킹 TOP 10</h2>
@@ -403,13 +437,6 @@
                 <button class="lb-tab" data-range="week" id="lbTabWeek">이번 주</button>
                 <button class="lb-tab" data-range="today" id="lbTabToday">오늘</button>
             </div>
-
-            <div class="nickname-row">
-                <span style="white-space:nowrap;">닉네임</span>
-                <input id="nicknameInput" placeholder="예: 시호">
-                <button class="btn btn-ghost" id="btnSaveName" style="padding:5px 8px;font-size:11px;">저장</button>
-            </div>
-            <small>※ 점수는 게임에서 실패했을 때 서버에 자동 저장됩니다.</small>
 
             <table>
                 <thead>
@@ -433,7 +460,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <script>
-/* 0. Firebase 초기화: 시호님 프로젝트 config 그대로 적용 */
+/* 0. Firebase 초기화: 시호님 프로젝트 config 그대로 사용 */
 const firebaseConfig = {
   apiKey: "AIzaSyAbGHsDFmQlXySnIK6y_hZMC4SNK7px-P4",
   authDomain: "brain-game-57799.firebaseapp.com",
@@ -455,6 +482,11 @@ let levelNumber = 1;
 let levelColor = 1;
 let bestNumber = 0;
 let bestColor = 0;
+
+const tabGame = document.getElementById("tabGame");
+const tabRank = document.getElementById("tabRank");
+const gameView = document.getElementById("gameView");
+const rankView = document.getElementById("rankView");
 
 const modeLabel = document.getElementById("modeLabel");
 const levelLabel = document.getElementById("levelLabel");
@@ -560,6 +592,7 @@ async function submitScoreToServer(mode, score) {
             score,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        // 랭킹 뷰에 있을 수도 있으니까, 랭킹도 갱신
         loadLeaderboard();
     } catch (err) {
         console.error("점수 저장 실패:", err);
@@ -572,7 +605,6 @@ async function loadLeaderboard() {
         leaderboardBody.innerHTML = '<tr><td colspan="4">불러오는 중...</td></tr>';
 
         let query = db.collection("scores").where("mode", "==", modeValue);
-
         const startDate = getRangeStartDate(currentRange);
         if (startDate) {
             query = query.where("createdAt", ">=", startDate);
@@ -613,7 +645,24 @@ async function loadLeaderboard() {
     }
 }
 
-/* 5. 게임 모드 전환 (왼쪽) */
+/* 5. 상단 탭 전환: 게임 / 랭킹 */
+function switchTopTab(tab) {
+    if (tab === "game") {
+        tabGame.classList.add("active");
+        tabRank.classList.remove("active");
+        gameView.style.display = "block";
+        rankView.style.display = "none";
+    } else {
+        tabRank.classList.add("active");
+        tabGame.classList.remove("active");
+        gameView.style.display = "none";
+        rankView.style.display = "block";
+        // 랭킹 탭 들어올 때마다 새로고침
+        loadLeaderboard();
+    }
+}
+
+/* 6. 게임 모드 전환 (왼쪽) */
 function switchMode(mode) {
     currentMode = mode;
 
@@ -633,7 +682,7 @@ function switchMode(mode) {
     updateStatusBar();
 }
 
-/* 6. 랭킹 모드 탭 전환 (오른쪽 숫자/색) */
+/* 7. 랭킹 모드 탭 전환 (숫자/색) */
 function switchRankMode(mode) {
     currentRankMode = mode;
     lbModeTabs.forEach(tab => {
@@ -647,7 +696,7 @@ function switchRankMode(mode) {
     loadLeaderboard();
 }
 
-/* 7. 랭킹 기간 탭 전환 (전체/주/오늘) */
+/* 8. 랭킹 기간 탭 전환 (전체/주/오늘) */
 function switchRange(range) {
     currentRange = range;
     lbTabs.forEach(tab => {
@@ -661,7 +710,7 @@ function switchRange(range) {
     loadLeaderboard();
 }
 
-/* 8. 숫자 모드 로직 */
+/* 9. 숫자 모드 로직 */
 function resetNumberUI() {
     seqText.textContent = "";
     seqText.classList.remove("show");
@@ -689,7 +738,7 @@ function startNumberRound() {
     seqText.textContent = currentSequence.split("").join(" ");
     setTimeout(() => seqText.classList.add("show"), 30);
 
-    // 레벨/숫자 길이에 따라 표시 시간 더 넉넉하게
+    // 레벨/숫자 길이에 따라 표시 시간 넉넉하게
     const showTime = 1200 + len * 400;
 
     setTimeout(() => {
@@ -735,7 +784,7 @@ function checkNumberAnswer() {
     }
 }
 
-/* 9. 색 패턴 모드 로직 */
+/* 10. 색 패턴 모드 로직 */
 function resetColorUI() {
     msgColor.textContent = "게임 시작을 누르면 패턴이 표시됩니다.";
     pads.forEach(p => p.classList.add("locked")); // 기본 잠금
@@ -826,7 +875,7 @@ function handlePadClick(e) {
     }
 }
 
-/* 10. 최고레벨에서 재도전 */
+/* 11. 최고레벨에서 재도전 */
 btnStartBest.addEventListener("click", () => {
     if (currentMode === "number") {
         if (bestNumber <= 0) {
@@ -849,7 +898,10 @@ btnStartBest.addEventListener("click", () => {
     }
 });
 
-/* 11. 이벤트 연결 */
+/* 12. 이벤트 연결 */
+tabGame.addEventListener("click", () => switchTopTab("game"));
+tabRank.addEventListener("click", () => switchTopTab("rank"));
+
 btnStart.addEventListener("click", () => {
     if (currentMode === "number") startNumberRound();
     else startColorRound();
@@ -858,6 +910,7 @@ btnSubmitNumber.addEventListener("click", checkNumberAnswer);
 numberInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") checkNumberAnswer();
 });
+
 pads.forEach(p => p.addEventListener("click", handlePadClick));
 
 btnModeNumber.addEventListener("click", () => switchMode("number"));
@@ -894,11 +947,12 @@ lbTabs.forEach(tab => {
     });
 });
 
-/* 12. 초기화 */
+/* 13. 초기화 */
 loadLocalSettings();
-switchMode("number");      // 게임 기본 모드
-switchRankMode("number");  // 랭킹 기본 모드
-switchRange("all");        // 랭킹 기본 기간
+switchTopTab("game");
+switchMode("number");
+switchRankMode("number");
+switchRange("all");
 updateStatusBar();
 loadLeaderboard();
 </script>
