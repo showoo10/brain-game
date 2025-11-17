@@ -553,6 +553,7 @@
 
 <!-- Firebase CDN (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <script>
@@ -567,7 +568,12 @@ const firebaseConfig = {
   measurementId: "G-DRQ9NCX5YG"
 };
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const db = firebase.firestore();
+
+/* 익명 로그인 상태 */
+let currentUserUid = null;
+let authReady = false;
 
 /* 상태 변수 & DOM 참조 */
 let currentMode = "number";       // 실제 게임 모드
@@ -677,17 +683,68 @@ function getRangeStartDate(range) {
     return null; // 전체
 }
 
-/* 점수 서버 전송 (단순 add) */
+/* 🔐 익명 로그인 초기화 */
+function initAuth() {
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            currentUserUid = user.uid;
+            authReady = true;
+            // 랭킹 페이지면 바로 새로고침
+            if (rankView.style.display === "block") {
+                loadLeaderboard();
+            }
+        } else {
+            auth.signInAnonymously().catch((err) => {
+                console.error("익명 로그인 실패:", err);
+            });
+        }
+    });
+
+    // 혹시 모를 첫 로그인 트리거
+    auth.signInAnonymously().catch(() => {});
+}
+
+/* 점수 서버 전송 (uid당 1문서, 모드별 최고점만 유지) */
 async function submitScoreToServer(mode, score) {
     try {
+        if (!authReady || !currentUserUid) {
+            console.warn("아직 로그인 전이라 점수를 저장하지 못했습니다.");
+            return;
+        }
         let name = nicknameInput.value.trim();
         if (!name) name = "익명";
 
-        await db.collection("scores").add({
-            name,
-            mode,  // "number" or "color"
-            score,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        const uid = currentUserUid;
+        const ref = db.collection("scores").doc(uid);
+
+        await db.runTransaction(async (tx) => {
+            const snap = await tx.get(ref);
+            const data = snap.exists ? snap.data() : {};
+
+            const update = {
+                uid,
+                name
+            };
+
+            if (mode === "number") {
+                const prev = data.scoreNumber || 0;
+                if (score > prev) {
+                    update.scoreNumber = score;
+                    update.updatedAtNumber = firebase.firestore.FieldValue.serverTimestamp();
+                } else {
+                    return; // 더 낮은 점수면 업데이트 안 함
+                }
+            } else {
+                const prev = data.scoreColor || 0;
+                if (score > prev) {
+                    update.scoreColor = score;
+                    update.updatedAtColor = firebase.firestore.FieldValue.serverTimestamp();
+                } else {
+                    return;
+                }
+            }
+
+            tx.set(ref, update, { merge: true });
         });
 
         loadLeaderboard();
@@ -696,22 +753,20 @@ async function submitScoreToServer(mode, score) {
     }
 }
 
-/* 랭킹 로딩 */
+/* 🔥 랭킹 로딩: uid당 1개 (scores 컬렉션 문서 1개당 유저 1명) */
 async function loadLeaderboard() {
     try {
         const modeValue = currentRankMode === "number" ? "number" : "color";
         leaderboardBody.innerHTML = '<tr><td colspan="4">불러오는 중...</td></tr>';
 
-        let query = db.collection("scores").where("mode", "==", modeValue);
-        const startDate = getRangeStartDate(currentRange);
-        if (startDate) {
-            query = query.where("createdAt", ">=", startDate);
-        }
+        const fieldScore = modeValue === "number" ? "scoreNumber" : "scoreColor";
+        const fieldTime  = modeValue === "number" ? "updatedAtNumber" : "updatedAtColor";
 
-        query = query
-            .orderBy("score", "desc")
-            .orderBy("createdAt", "asc")
-            .limit(10);
+        // 우선 상위 100명 정도만 가져온 뒤, 클라이언트에서 기간 필터/정렬
+        let query = db.collection("scores")
+            .where(fieldScore, ">", 0)
+            .orderBy(fieldScore, "desc")
+            .limit(100);
 
         const snap = await query.get();
 
@@ -721,26 +776,58 @@ async function loadLeaderboard() {
             return;
         }
 
-        let html = "";
-        let rank = 1;
+        const startDate = getRangeStartDate(currentRange);
+        const entries = [];
+
         snap.forEach(doc => {
             const data = doc.data();
             const name = (data.name || "익명").slice(0, 16);
-            const score = data.score || 0;
-            const ts = data.createdAt && data.createdAt.toDate ? data.createdAt.toDate() : null;
+            const score = data[fieldScore] || 0;
+            const tsRaw = data[fieldTime];
+            const ts = tsRaw && tsRaw.toDate ? tsRaw.toDate() : null;
+
+            if (startDate && ts && ts < startDate) {
+                return; // 기간 필터
+            }
+
+            entries.push({ name, score, ts });
+        });
+
+        // 점수 내림차순, 같은 점수면 시간 빠른 순
+        entries.sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            if (a.ts && b.ts) return a.ts - b.ts;
+            if (a.ts) return -1;
+            if (b.ts) return 1;
+            return 0;
+        });
+
+        const top = entries.slice(0, 10);
+
+        if (top.length === 0) {
+            leaderboardBody.innerHTML =
+                '<tr><td colspan="4">표시할 기록이 없습니다.</td></tr>';
+            return;
+        }
+
+        let html = "";
+        let rank = 1;
+        top.forEach(item => {
+            const ts = item.ts;
             const timeStr = ts
                 ? `${ts.getFullYear()}.${String(ts.getMonth()+1).padStart(2,'0')}.${String(ts.getDate()).padStart(2,'0')} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}`
                 : "-";
             html += `
                 <tr>
                     <td class="rank">${rank}</td>
-                    <td>${name}</td>
-                    <td>${score}</td>
+                    <td>${item.name}</td>
+                    <td>${item.score}</td>
                     <td>${timeStr}</td>
                 </tr>
             `;
             rank++;
         });
+
         leaderboardBody.innerHTML = html;
     } catch (err) {
         console.error("랭킹 불러오기 실패:", err);
@@ -1049,12 +1136,12 @@ lbTabs.forEach(tab => {
 
 /* 초기화 */
 loadLocalSettings();
+initAuth();
 switchTopTab("game");
 switchMode("number");
 switchRankMode("number");
 switchRange("all");
 updateStatusBar();
-loadLeaderboard();
 </script>
 </body>
 </html>
