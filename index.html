@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>두뇌 기억력 게임 (랭킹 지원 버전)</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #222 0, #050509 60%);
+        color: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+    }
+    .card {
+        background: rgba(15, 15, 25, 0.95);
+        border-radius: 20px;
+        padding: 24px 28px 30px;
+        max-width: 880px;
+        width: 96%;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+    }
+    h1 {
+        margin: 0 0 8px;
+        font-size: 26px;
+        text-align: center;
+    }
+    .subtitle {
+        text-align: center;
+        font-size: 13px;
+        color: #bbbbd5;
+        margin-bottom: 16px;
+    }
+    .layout {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 18px;
+    }
+    @media (max-width: 760px) {
+        .layout {
+            grid-template-columns: 1fr;
+        }
+    }
+    .mode-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .mode-btn {
+        flex: 1;
+        border-radius: 999px;
+        border: 1px solid #33364a;
+        background: #151726;
+        color: #d6d8ff;
+        padding: 8px 0;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+    .mode-btn.active {
+        background: linear-gradient(120deg, #4f46e5, #ec4899);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(79,70,229,0.6);
+    }
+    .status-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #c7c9ff;
+        margin-bottom: 10px;
+    }
+    .status-row span strong { color: white; }
+    .status-row .best { color: #fde68a; }
+
+    .panel {
+        border-radius: 16px;
+        background: radial-gradient(circle at top, #1f2937, #030712);
+        padding: 18px 16px 16px;
+        margin-bottom: 16px;
+        min-height: 140px;
+        position: relative;
+        overflow: hidden;
+    }
+    .panel-inner { position: relative; z-index: 1; text-align: center; }
+
+    #sequenceText {
+        font-size: 40px;
+        letter-spacing: 0.18em;
+        margin: 10px 0 4px;
+        min-height: 48px;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.22s ease-out;
+    }
+    #sequenceText.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .input-row {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 14px;
+    }
+    #numberInput {
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid #4b5563;
+        background: #020617;
+        color: #f9fafb;
+        width: 170px;
+        text-align: center;
+        font-size: 18px;
+    }
+    #numberInput:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 1px #6366f1;
+    }
+
+    .btn {
+        border-radius: 999px;
+        border: none;
+        padding: 9px 18px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        font-weight: 500;
+    }
+    .btn-primary {
+        background: linear-gradient(110deg, #4f46e5, #6366f1);
+        color: #f9fafb;
+        box-shadow: 0 8px 18px rgba(79,70,229,0.7);
+    }
+    .btn-ghost {
+        background: transparent;
+        color: #e5e7eb;
+        border: 1px solid #4b5563;
+    }
+
+    /* Color mode */
+    .color-board {
+        margin-top: 8px;
+        display: grid;
+        grid-template-columns: repeat(2, 110px);
+        grid-template-rows: repeat(2, 110px);
+        gap: 10px;
+        justify-content: center;
+    }
+    .color-pad {
+        border-radius: 18px;
+        cursor: pointer;
+        position: relative;
+        opacity: 0.88;
+        transition: all 0.12s ease-out;
+    }
+    .color-pad span {
+        position: absolute;
+        bottom: 8px;
+        right: 10px;
+        font-size: 11px;
+        color: rgba(15,23,42,0.7);
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(255,255,255,0.7);
+    }
+
+    .pad-green { background: radial-gradient(circle at 20% 20%, #bbf7d0, #16a34a); }
+    .pad-red   { background: radial-gradient(circle at 20% 20%, #fecaca, #dc2626); }
+    .pad-yellow{ background: radial-gradient(circle at 20% 20%, #fef9c3, #eab308); }
+    .pad-blue  { background: radial-gradient(circle at 20% 20%, #bfdbfe, #2563eb); }
+
+    .color-pad.active {
+        transform: scale(1.05);
+        opacity: 1;
+        box-shadow: 0 0 18px white;
+    }
+    .color-pad.locked { cursor: default; filter: grayscale(0.25); }
+
+    .controls-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+    /* 랭킹 영역 */
+    .leaderboard {
+        border-radius: 16px;
+        background: #020617;
+        padding: 14px 16px 16px;
+        border: 1px solid #1f2933;
+        font-size: 13px;
+    }
+    .leaderboard-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
+    }
+    .leaderboard-title h2 {
+        margin: 0;
+        font-size: 15px;
+    }
+    .leaderboard small {
+        color: #9ca3af;
+    }
+    .nickname-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 8px;
+        align-items: center;
+    }
+    #nicknameInput {
+        flex: 1;
+        padding: 6px 8px;
+        border-radius: 999px;
+        border: 1px solid #4b5563;
+        background: #020617;
+        color: #f9fafb;
+        font-size: 13px;
+    }
+    #nicknameInput:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 1px #6366f1;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+    th, td {
+        padding: 4px 6px;
+        text-align: left;
+    }
+    th {
+        border-bottom: 1px solid #4b5563;
+        color: #e5e7eb;
+        font-weight: 500;
+    }
+    td.rank {
+        width: 24px;
+        color: #9ca3af;
+    }
+    tr:nth-child(even) td {
+        background: rgba(15,23,42,0.6);
+    }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>두뇌 기억력 게임</h1>
+    <div class="subtitle">숫자 기억 + 색 패턴 + 글로벌 랭킹</div>
+
+    <div class="layout">
+        <!-- 왼쪽: 게임 영역 -->
+        <div>
+            <div class="mode-tabs">
+                <button class="mode-btn active" id="btnModeNumber">🧮 숫자 기억</button>
+                <button class="mode-btn" id="btnModeColor">🎨 색 패턴</button>
+            </div>
+
+            <div class="status-row">
+                <span>모드: <strong id="modeLabel">숫자 기억</strong></span>
+                <span>레벨: <strong id="levelLabel">1</strong></span>
+                <span class="best">내 최고레벨: <strong id="bestLabel">0</strong></span>
+            </div>
+
+            <div class="panel">
+                <div class="panel-inner" id="panelNumber">
+                    <div id="sequenceText"></div>
+                    <div id="message">게임 시작을 누르면 숫자가 잠깐 표시됩니다.</div>
+
+                    <div class="input-row" id="numberInputRow" style="display:none;">
+                        <input type="text" id="numberInput" placeholder="입력">
+                        <button class="btn btn-primary" id="btnSubmitNumber">제출</button>
+                    </div>
+                </div>
+
+                <div class="panel-inner" id="panelColor" style="display:none;">
+                    <div id="messageColor">게임 시작을 누르면 패턴이 표시됩니다.</div>
+                    <div class="color-board">
+                        <div class="color-pad pad-green" data-idx="0"><span>1</span></div>
+                        <div class="color-pad pad-red" data-idx="1"><span>2</span></div>
+                        <div class="color-pad pad-yellow" data-idx="2"><span>3</span></div>
+                        <div class="color-pad pad-blue" data-idx="3"><span>4</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-row">
+                <button class="btn btn-primary" id="btnStart">게임 시작 / 다음 라운드</button>
+                <button class="btn btn-ghost" id="btnStartBest">최고레벨에서 재도전</button>
+                <button class="btn btn-ghost" id="btnReset">내 기록 초기화</button>
+            </div>
+        </div>
+
+        <!-- 오른쪽: 랭킹 영역 -->
+        <div class="leaderboard">
+            <div class="leaderboard-title">
+                <h2>현재 모드 랭킹 TOP 10</h2>
+                <small id="leaderboardModeLabel">모드: 숫자 기억</small>
+            </div>
+
+            <div class="nickname-row">
+                <span>닉네임</span>
+                <input id="nicknameInput" placeholder="예: 시호">
+                <button class="btn btn-ghost" id="btnSaveName" style="padding:6px 10px;font-size:12px;">저장</button>
+            </div>
+            <small>※ 점수는 게임에서 실패했을 때 자동으로 서버에 올라갑니다.</small>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>닉네임</th>
+                        <th>레벨</th>
+                        <th>기록 시간</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    <tr><td colspan="4">불러오는 중...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase CDN (compat 버전, v10 예시) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+/* ===============================
+   0. Firebase 초기화
+   =============================== */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAbGHsDFmQlXySnIK6y_hZMC4SNK7px-P4",
+    authDomain: "brain-game-57799.firebaseapp.com",
+    projectId: "brain-game-57799",
+    storageBucket: "brain-game-57799.firebasestorage.app",
+    messagingSenderId: "577688993292",
+    appId: "1:577688993292:web:1c6647e31238b0e0407829",
+    measurementId: "G-DRQ9NCX5YG"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ===============================
+   1. 공통 상태 변수
+   =============================== */
+let currentMode = "number"; 
+let levelNumber = 1;
+let levelColor = 1;
+let bestNumber = 0;
+let bestColor = 0;
+
+const modeLabel = document.getElementById("modeLabel");
+const levelLabel = document.getElementById("levelLabel");
+const bestLabel = document.getElementById("bestLabel");
+
+const btnModeNumber = document.getElementById("btnModeNumber");
+const btnModeColor = document.getElementById("btnModeColor");
+const btnStart = document.getElementById("btnStart");
+const btnStartBest = document.getElementById("btnStartBest");
+const btnReset = document.getElementById("btnReset");
+
+/* 숫자 모드 요소 */
+const seqText = document.getElementById("sequenceText");
+const msg = document.getElementById("message");
+const numberInputRow = document.getElementById("numberInputRow");
+const numberInput = document.getElementById("numberInput");
+const btnSubmitNumber = document.getElementById("btnSubmitNumber");
+
+/* 색 모드 요소 */
+const panelNumber = document.getElementById("panelNumber");
+const panelColor = document.getElementById("panelColor");
+const msgColor = document.getElementById("messageColor");
+const pads = Array.from(document.querySelectorAll(".color-pad"));
+
+/* 랭킹 UI 요소 */
+const nicknameInput = document.getElementById("nicknameInput");
+const btnSaveName = document.getElementById("btnSaveName");
+const leaderboardBody = document.getElementById("leaderboardBody");
+const leaderboardModeLabel = document.getElementById("leaderboardModeLabel");
+
+let currentSequence = "";
+let acceptingNumberInput = false;
+
+let colorSequence = [];
+let userColorIndex = 0;
+let acceptingColorInput = false;
+
+/* ===============================
+   2. 로컬 최고레벨 & 닉네임 저장
+   =============================== */
+function loadLocalSettings() {
+    bestNumber = parseInt(localStorage.getItem("brainGame_best_number") || "0", 10);
+    bestColor = parseInt(localStorage.getItem("brainGame_best_color") || "0", 10);
+    const storedName = localStorage.getItem("brainGame_nickname") || "";
+    nicknameInput.value = storedName;
+}
+
+function saveBestScores() {
+    localStorage.setItem("brainGame_best_number", bestNumber.toString());
+    localStorage.setItem("brainGame_best_color", bestColor.toString());
+}
+
+function saveNickname() {
+    const name = nicknameInput.value.trim();
+    localStorage.setItem("brainGame_nickname", name);
+}
+
+/* ===============================
+   3. UI 공통 업데이트
+   =============================== */
+function updateStatusBar() {
+    if (currentMode === "number") {
+        modeLabel.textContent = "숫자 기억";
+        levelLabel.textContent = levelNumber;
+        bestLabel.textContent = bestNumber;
+        leaderboardModeLabel.textContent = "모드: 숫자 기억";
+    } else {
+        modeLabel.textContent = "색 패턴";
+        levelLabel.textContent = levelColor;
+        bestLabel.textContent = bestColor;
+        leaderboardModeLabel.textContent = "모드: 색 패턴";
+    }
+}
+
+/* ===============================
+   4. 랭킹 관련 함수
+   =============================== */
+async function submitScoreToServer(mode, score) {
+    try {
+        let name = nicknameInput.value.trim();
+        if (!name) name = "익명";
+
+        await db.collection("scores").add({
+            name,
+            mode,          // "number" or "color"
+            score,         // 도달 레벨
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        loadLeaderboard(); // 갱신
+    } catch (err) {
+        console.error("점수 저장 실패:", err);
+    }
+}
+
+async function loadLeaderboard() {
+    try {
+        const modeValue = currentMode === "number" ? "number" : "color";
+        leaderboardBody.innerHTML = '<tr><td colspan="4">불러오는 중...</td></tr>';
+
+        const snap = await db.collection("scores")
+            .where("mode", "==", modeValue)
+            .orderBy("score", "desc")
+            .orderBy("createdAt", "asc")
+            .limit(10)
+            .get();
+
+        if (snap.empty) {
+            leaderboardBody.innerHTML = '<tr><td colspan="4">아직 기록이 없습니다. 첫 기록의 주인이 되어보세요!</td></tr>';
+            return;
+        }
+
+        let html = "";
+        let rank = 1;
+        snap.forEach(doc => {
+            const data = doc.data();
+            const name = (data.name || "익명").slice(0, 16);
+            const score = data.score || 0;
+            const ts = data.createdAt && data.createdAt.toDate ? data.createdAt.toDate() : null;
+            const timeStr = ts
+                ? `${ts.getFullYear()}.${String(ts.getMonth()+1).padStart(2,'0')}.${String(ts.getDate()).padStart(2,'0')} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}`
+                : "-";
+
+            html += `
+                <tr>
+                    <td class="rank">${rank}</td>
+                    <td>${name}</td>
+                    <td>${score}</td>
+                    <td>${timeStr}</td>
+                </tr>
+            `;
+            rank++;
+        });
+
+        leaderboardBody.innerHTML = html;
+    } catch (err) {
+        console.error("랭킹 불러오기 실패:", err);
+        leaderboardBody.innerHTML = '<tr><td colspan="4">랭킹을 불러올 수 없습니다.</td></tr>';
+    }
+}
+
+/* ===============================
+   5. 모드 전환
+   =============================== */
+function switchMode(mode) {
+    currentMode = mode;
+
+    if (mode === "number") {
+        btnModeNumber.classList.add("active");
+        btnModeColor.classList.remove("active");
+        panelNumber.style.display = "block";
+        panelColor.style.display = "none";
+        resetNumberUI();
+    } else {
+        btnModeColor.classList.add("active");
+        btnModeNumber.classList.remove("active");
+        panelNumber.style.display = "none";
+        panelColor.style.display = "block";
+        resetColorUI();
+    }
+
+    updateStatusBar();
+    loadLeaderboard();
+}
+
+/* ===============================
+   6. 숫자 모드 로직
+   =============================== */
+function resetNumberUI() {
+    seqText.textContent = "";
+    seqText.classList.remove("show");
+    msg.textContent = "게임 시작을 누르면 숫자가 잠깐 표시됩니다.";
+    numberInputRow.style.display = "none";
+    acceptingNumberInput = false;
+}
+
+function generateNumberSequence(len) {
+    let s = "";
+    for (let i = 0; i < len; i++) {
+        s += Math.floor(Math.random() * 10);
+    }
+    return s;
+}
+
+function startNumberRound() {
+    acceptingNumberInput = false;
+    numberInputRow.style.display = "none";
+
+    const len = levelNumber + 2;
+    currentSequence = generateNumberSequence(len);
+
+    msg.textContent = "숫자를 집중해서 보세요...";
+    seqText.textContent = currentSequence.split("").join(" ");
+    setTimeout(() => seqText.classList.add("show"), 30);
+
+    const showTime = 900 + len * 250;
+
+    setTimeout(() => {
+        seqText.classList.remove("show");
+        setTimeout(() => {
+            seqText.textContent = "";
+            msg.textContent = "입력해 보세요.";
+            numberInputRow.style.display = "flex";
+            numberInput.value = "";
+            numberInput.focus();
+            acceptingNumberInput = true;
+        }, 230);
+    }, showTime);
+}
+
+function checkNumberAnswer() {
+    if (!acceptingNumberInput) return;
+
+    const user = numberInput.value.trim().replace(/\s+/g, "");
+    acceptingNumberInput = false;
+
+    const reachedLevel = levelNumber - 1; // 틀릴 경우 이게 최종 도달 레벨
+
+    if (user === currentSequence) {
+        msg.textContent = "정답! 레벨업 🎉";
+        levelNumber++;
+        if (levelNumber - 1 > bestNumber) {
+            bestNumber = levelNumber - 1;
+            saveBestScores();
+        }
+        updateStatusBar();
+        setTimeout(startNumberRound, 900);
+    } else {
+        msg.textContent = `틀림! 정답: ${currentSequence}`;
+        numberInputRow.style.display = "none";
+
+        const score = Math.max(reachedLevel, 1);
+        if (score > bestNumber) {
+            bestNumber = score;
+            saveBestScores();
+        }
+        levelNumber = 1;
+        updateStatusBar();
+
+        // 서버에 점수 저장
+        submitScoreToServer("number", score);
+    }
+}
+
+/* ===============================
+   7. 색 패턴 모드 로직
+   =============================== */
+function resetColorUI() {
+    msgColor.textContent = "게임 시작을 누르면 패턴이 표시됩니다.";
+    pads.forEach(p => p.classList.add("locked"));
+    colorSequence = [];
+    acceptingColorInput = false;
+    userColorIndex = 0;
+}
+
+function flashPad(idx, delay) {
+    const pad = pads[idx];
+    setTimeout(() => {
+        pad.classList.add("active");
+        setTimeout(() => pad.classList.remove("active"), 350);
+    }, delay);
+}
+
+function playColorSequence() {
+    acceptingColorInput = false;
+    pads.forEach(p => p.classList.add("locked"));
+
+    msgColor.textContent = "패턴을 잘 보세요...";
+    let t = 300;
+    colorSequence.forEach(idx => {
+        flashPad(idx, t);
+        t += 550;
+    });
+
+    setTimeout(() => {
+        msgColor.textContent = "같은 순서로 눌러보세요.";
+        acceptingColorInput = true;
+        pads.forEach(p => p.classList.remove("locked"));
+        userColorIndex = 0;
+    }, t + 150);
+}
+
+function startColorRound() {
+    acceptingColorInput = false;
+    pads.forEach(p => p.classList.add("locked"));
+
+    colorSequence = [];
+    const targetLength = Math.max(1, levelColor);
+    for (let i = 0; i < targetLength; i++) {
+        colorSequence.push(Math.floor(Math.random() * 4));
+    }
+
+    playColorSequence();
+}
+
+function handlePadClick(e) {
+    if (!acceptingColorInput) return;
+
+    const idx = parseInt(e.currentTarget.getAttribute("data-idx"), 10);
+
+    e.currentTarget.classList.add("active");
+    setTimeout(() => e.currentTarget.classList.remove("active"), 160);
+
+    const reachedLevel = levelColor - 1;
+
+    if (idx === colorSequence[userColorIndex]) {
+        userColorIndex++;
+
+        if (userColorIndex === colorSequence.length) {
+            acceptingColorInput = false;
+            pads.forEach(p => p.classList.add("locked"));
+            msgColor.textContent = "정답! 패턴이 길어집니다.";
+            levelColor++;
+
+            if (levelColor - 1 > bestColor) {
+                bestColor = levelColor - 1;
+                saveBestScores();
+            }
+
+            updateStatusBar();
+            setTimeout(startColorRound, 900);
+        }
+    } else {
+        acceptingColorInput = false;
+        pads.forEach(p => p.classList.add("locked"));
+        msgColor.textContent = "틀렸습니다! 다시 처음부터.";
+
+        const score = Math.max(reachedLevel, 1);
+        if (score > bestColor) {
+            bestColor = score;
+            saveBestScores();
+        }
+        levelColor = 1;
+        updateStatusBar();
+        colorSequence = [];
+
+        // 서버에 점수 저장
+        submitScoreToServer("color", score);
+    }
+}
+
+/* ===============================
+   8. 최고레벨에서 재도전
+   =============================== */
+btnStartBest.addEventListener("click", () => {
+    if (currentMode === "number") {
+        if (bestNumber <= 0) {
+            alert("아직 최고 레벨 기록이 없습니다!");
+            return;
+        }
+        levelNumber = bestNumber;
+        updateStatusBar();
+        resetNumberUI();
+        setTimeout(startNumberRound, 200);
+    } else {
+        if (bestColor <= 0) {
+            alert("아직 최고 레벨 기록이 없습니다!");
+            return;
+        }
+        levelColor = bestColor;
+        updateStatusBar();
+        resetColorUI();
+        setTimeout(startColorRound, 200);
+    }
+});
+
+/* ===============================
+   9. 버튼/이벤트 연결
+   =============================== */
+btnStart.addEventListener("click", () => {
+    if (currentMode === "number") {
+        startNumberRound();
+    } else {
+        startColorRound();
+    }
+});
+
+btnSubmitNumber.addEventListener("click", checkNumberAnswer);
+numberInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") checkNumberAnswer();
+});
+
+pads.forEach(p => p.addEventListener("click", handlePadClick));
+
+btnModeNumber.addEventListener("click", () => switchMode("number"));
+btnModeColor.addEventListener("click", () => switchMode("color"));
+
+btnReset.addEventListener("click", () => {
+    if (!confirm("내 브라우저에 저장된 최고 레벨 기록을 모두 삭제할까요?")) return;
+    bestNumber = 0;
+    bestColor = 0;
+    levelNumber = 1;
+    levelColor = 1;
+    saveBestScores();
+    resetNumberUI();
+    resetColorUI();
+    updateStatusBar();
+});
+
+btnSaveName.addEventListener("click", () => {
+    saveNickname();
+    alert("닉네임이 저장되었습니다. 이제 기록이 서버에 이 이름으로 올라갑니다.");
+});
+
+/* ===============================
+   10. 초기화
+   =============================== */
+loadLocalSettings();
+switchMode("number");
+updateStatusBar();
+loadLeaderboard();
+</script>
+</body>
+</html>
