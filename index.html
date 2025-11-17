@@ -1,445 +1,493 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>두뇌 기억력 게임 (랭킹 + 모바일 대응)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<style>
-    :root {
-        --bg-main: radial-gradient(circle at top, #151826 0, #02010b 55%, #000 100%);
-        --card-bg: rgba(10, 12, 24, 0.98);
-        --card-border: rgba(148, 163, 184, 0.18);
-        --accent: #6366f1;
-        --accent2: #ec4899;
-        --text-main: #f9fafb;
-        --text-sub: #9ca3af;
-        --chip-bg: #0b1020;
-        --chip-border: #33364a;
-        --chip-bg-active: linear-gradient(120deg, #4f46e5, #ec4899);
-    }
+    <meta charset="UTF-8">
+    <title>두뇌 기억력 게임 - 숫자 기억 & 색 패턴 글로벌 랭킹</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    * { box-sizing: border-box; }
+    <!-- SEO 기본 -->
+    <meta name="title" content="두뇌 기억력 게임 - 숫자 기억 & 색 패턴 글로벌 랭킹">
+    <meta name="description" content="두뇌 기억력 게임! 숫자 기억, 색 패턴, 글로벌 랭킹 기능 제공. PC/모바일 완전 지원. 지금 바로 기억력 테스트 해보세요.">
+    <meta name="keywords" content="기억력 게임, 두뇌 게임, 숫자 기억, 색 패턴, 브레인 게임, brain game, 기억력 테스트, 랭킹 게임, 웹게임">
+    <meta name="robots" content="index, follow">
 
-    body {
-        margin: 0;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: var(--bg-main);
-        color: var(--text-main);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 12px;
-    }
+    <!-- Canonical -->
+    <link rel="canonical" href="https://showoo10.github.io/brain-game/">
 
-    .card {
-        background: radial-gradient(circle at top left, rgba(148,163,255,0.12) 0, transparent 50%),
-                    radial-gradient(circle at bottom right, rgba(236,72,153,0.12) 0, transparent 55%),
-                    var(--card-bg);
-        border-radius: 22px;
-        padding: 20px 20px 24px;
-        max-width: 900px;
-        width: min(100%, 900px);
-        border: 1px solid var(--card-border);
-        box-shadow:
-            0 28px 80px rgba(15,23,42,0.9),
-            0 0 0 1px rgba(15,23,42,0.9);
-        backdrop-filter: blur(16px);
-    }
+    <!-- SNS 미리보기 (카톡/페북 등에서 공유 시) -->
+    <meta property="og:title" content="두뇌 기억력 게임 - 숫자 기억 & 색 패턴">
+    <meta property="og:description" content="숫자 기억 + 색 패턴 + 글로벌 랭킹! 모바일/PC 완전 지원.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://showoo10.github.io/brain-game/">
+    <!-- 이미지 파일 만들면 이 경로에 업로드: /brain-game/og-image.png -->
+    <meta property="og:image" content="https://showoo10.github.io/brain-game/og-image.png">
 
-    h1 {
-        margin: 0 0 4px;
-        font-size: clamp(22px, 3.2vw, 28px);
-        text-align: center;
-        letter-spacing: 0.08em;
-    }
-
-    .subtitle {
-        text-align: center;
-        font-size: 12px;
-        color: var(--text-sub);
-        margin-bottom: 14px;
-    }
-
-    /* 상단 탭: 게임 / 랭킹 */
-    .top-tabs {
-        display: inline-flex;
-        background: #020617;
-        border-radius: 999px;
-        padding: 3px;
-        border: 1px solid rgba(55,65,81,0.9);
-        margin: 0 auto 12px;
-    }
-    .top-tab {
-        min-width: 90px;
-        padding: 7px 16px;
-        border-radius: 999px;
-        border: none;
-        background: transparent;
-        color: var(--text-sub);
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.18s ease;
-    }
-    .top-tab.active {
-        background: radial-gradient(circle at top, rgba(248,250,252,0.16), transparent 70%),
-                    linear-gradient(120deg, #4f46e5, #ec4899);
-        color: white;
-        box-shadow: 0 10px 24px rgba(79,70,229,0.65);
-    }
-
-    #gameView, #rankView {
-        margin-top: 12px;
-    }
-
-    /* 공통 버튼 & 인풋 등 */
-    .mode-tabs {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-    .mode-btn {
-        flex: 1;
-        border-radius: 999px;
-        border: 1px solid var(--chip-border);
-        background: var(--chip-bg);
-        color: #e5e7eb;
-        padding: 8px 0;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.18s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-    .mode-btn span.icon {
-        font-size: 15px;
-    }
-    .mode-btn.active {
-        background: var(--chip-bg-active);
-        color: #f9fafb;
-        border-color: transparent;
-        transform: translateY(-1px);
-        box-shadow: 0 8px 20px rgba(79,70,229,0.7);
-    }
-
-    .status-row {
-        display: flex;
-        justify-content: space-between;
-        font-size: 12px;
-        color: #c7c9ff;
-        margin-bottom: 10px;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-    .status-row span strong { color: white; }
-    .status-row .best { color: #fde68a; }
-
-    .panel {
-        border-radius: 18px;
-        background:
-            radial-gradient(circle at top, #111827, #020617);
-        padding: 14px 14px 16px;
-        margin-bottom: 14px;
-        position: relative;
-        overflow: hidden;
-        box-shadow: inset 0 0 0 1px rgba(15,23,42,0.8);
-    }
-    .panel::before {
-        content:"";
-        position:absolute;
-        inset:-40%;
-        background:
-            radial-gradient(circle at 0 0, rgba(56,189,248,0.07) 0,transparent 60%),
-            radial-gradient(circle at 100% 100%, rgba(251,113,133,0.06) 0, transparent 55%);
-        opacity:0.9;
-        pointer-events:none;
-    }
-    .panel-inner { position: relative; z-index: 1; text-align: center; }
-
-    #sequenceText {
-        font-size: clamp(24px, 7vw, 40px);
-        letter-spacing: 0.18em;
-        margin: 4px 0 6px;
-        min-height: 40px;
-        opacity: 0;
-        transform: translateY(8px);
-        transition: all 0.24s ease-out;
-    }
-    #sequenceText.show {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    #message, #messageColor {
-        font-size: 12px;
-        min-height: 18px;
-        color: #e5e7eb;
-    }
-
-    .input-row {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-        margin-top: 10px;
-    }
-    #numberInput {
-        padding: 8px 12px;
-        border-radius: 999px;
-        border: 1px solid #4b5563;
-        background: #020617;
-        color: #f9fafb;
-        width: 60%;
-        max-width: 260px;
-        text-align: center;
-        font-size: 16px;
-    }
-    #numberInput:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow:
-            0 0 0 1px var(--accent),
-            0 0 16px rgba(129,140,248,0.75);
-    }
-
-    .btn {
-        border-radius: 999px;
-        border: none;
-        padding: 8px 16px;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.16s ease;
-        font-weight: 500;
-        white-space: nowrap;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-    }
-    .btn-primary {
-        background: linear-gradient(115deg, #4f46e5, #6366f1);
-        color: #f9fafb;
-        box-shadow: 0 10px 22px rgba(79,70,229,0.75);
-    }
-    .btn-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 14px 28px rgba(79,70,229,0.85);
-        filter: brightness(1.03);
-    }
-    .btn-ghost {
-        background: rgba(15,23,42,0.9);
-        color: #e5e7eb;
-        border: 1px solid #4b5563;
-    }
-    .btn-ghost:hover {
-        border-color: rgba(148,163,184,0.9);
-        background: rgba(15,23,42,0.95);
-    }
-
-    .controls-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 10px;
-    }
-    .controls-row .btn {
-        flex: 1;
-        text-align: center;
-    }
-    @media (min-width: 761px) {
-        .controls-row .btn {
-            flex: 0 0 auto;
+    <style>
+        :root {
+            --bg-main: radial-gradient(circle at top, #151826 0, #02010b 55%, #000 100%);
+            --card-bg: rgba(10, 12, 24, 0.98);
+            --card-border: rgba(148, 163, 184, 0.18);
+            --accent: #6366f1;
+            --accent2: #ec4899;
+            --text-main: #f9fafb;
+            --text-sub: #9ca3af;
+            --chip-bg: #0b1020;
+            --chip-border: #33364a;
+            --chip-bg-active: linear-gradient(120deg, #4f46e5, #ec4899);
         }
-    }
 
-    .nickname-row {
-        display: flex;
-        gap: 6px;
-        margin-top: 4px;
-        align-items: center;
-        font-size: 12px;
-        color: var(--text-sub);
-    }
-    #nicknameInput {
-        flex: 1;
-        padding: 7px 10px;
-        border-radius: 999px;
-        border: 1px solid #4b5563;
-        background: #020617;
-        color: #f9fafb;
-        font-size: 12px;
-    }
-    #nicknameInput:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 1px var(--accent);
-    }
+        * { box-sizing: border-box; }
 
-    /* 색 패턴 보드 */
-    .color-board-wrapper {
-        margin-top: 10px;
-        display: flex;
-        justify-content: center;
-    }
-    .color-board {
-        width: min(260px, 70vw);
-        aspect-ratio: 1 / 1;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(2, 1fr);
-        gap: 10px;
-    }
-    .color-pad {
-        border-radius: 18px;
-        cursor: pointer;
-        position: relative;
-        opacity: 0.9;
-        transition: all 0.14s ease-out;
-        box-shadow:
-            0 0 0 2px rgba(15,23,42,0.9),
-            0 12px 20px rgba(0,0,0,0.7);
-    }
-    .color-pad span {
-        position: absolute;
-        bottom: 6px;
-        right: 8px;
-        font-size: 11px;
-        color: rgba(15,23,42,0.75);
-        font-weight: 600;
-        text-shadow: 0 1px 2px rgba(255,255,255,0.85);
-    }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 12px;
+        }
 
-    .pad-green { background: radial-gradient(circle at 20% 20%, #bbf7d0, #16a34a); }
-    .pad-red   { background: radial-gradient(circle at 20% 20%, #fecaca, #dc2626); }
-    .pad-yellow{ background: radial-gradient(circle at 20% 20%, #fef9c3, #eab308); }
-    .pad-blue  { background: radial-gradient(circle at 20% 20%, #bfdbfe, #2563eb); }
-
-    .color-pad.active {
-        transform: scale(1.06) translateY(-1px);
-        opacity: 1;
-        box-shadow:
-            0 0 22px rgba(255,255,255,0.9),
-            0 18px 28px rgba(15,23,42,0.7);
-    }
-    .color-pad.locked {
-        cursor: default;
-        filter: grayscale(0.32);
-        pointer-events: none;
-        opacity: 0.75;
-    }
-
-    /* 랭킹 화면 스타일 */
-    .leaderboard {
-        border-radius: 18px;
-        background:
-            radial-gradient(circle at top left, rgba(129,140,248,0.18) 0, transparent 55%),
-            #020617;
-        padding: 12px 14px 14px;
-        border: 1px solid rgba(55,65,81,0.9);
-        font-size: 12px;
-        margin-top: 4px;
-        box-shadow: 0 18px 40px rgba(15,23,42,0.95);
-    }
-    .leaderboard-title {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 8px;
-        gap: 4px;
-        flex-wrap: wrap;
-    }
-    .leaderboard-title h2 {
-        margin: 0;
-        font-size: 15px;
-    }
-
-    .leaderboard-mode-tabs {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 5px;
-        font-size: 11px;
-    }
-    .lb-mode-tab {
-        flex: 1;
-        text-align: center;
-        padding: 5px 0;
-        border-radius: 999px;
-        border: 1px solid #374151;
-        cursor: pointer;
-        color: #9ca3af;
-        background: #020617;
-        transition: all 0.16s ease;
-    }
-    .lb-mode-tab.active {
-        background: radial-gradient(circle at top, rgba(248,250,252,0.12), transparent 60%),
-                    linear-gradient(120deg, #4f46e5, #ec4899);
-        color: #f9fafb;
-        border-color: transparent;
-        box-shadow: 0 8px 18px rgba(79,70,229,0.7);
-    }
-
-    .leaderboard-tabs {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 8px;
-        font-size: 11px;
-    }
-    .lb-tab {
-        flex: 1;
-        text-align: center;
-        padding: 5px 0;
-        border-radius: 999px;
-        border: 1px solid #374151;
-        cursor: pointer;
-        color: #9ca3af;
-        background: #020617;
-        transition: all 0.16s ease;
-    }
-    .lb-tab.active {
-        background: #111827;
-        color: #e5e7eb;
-        border-color: #6366f1;
-        box-shadow: 0 6px 14px rgba(15,23,42,0.9);
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 11px;
-        margin-top: 4px;
-        background: rgba(15,23,42,0.6);
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    th, td {
-        padding: 5px 6px;
-        text-align: left;
-    }
-    th {
-        border-bottom: 1px solid #4b5563;
-        color: #e5e7eb;
-        font-weight: 500;
-        background: rgba(15,23,42,0.95);
-    }
-    td.rank { width: 22px; color: #9ca3af; }
-    tr:nth-child(even) td {
-        background: rgba(15,23,42,0.82);
-    }
-    tr:nth-child(odd) td {
-        background: rgba(15,23,42,0.65);
-    }
-
-    @media (max-width: 640px) {
         .card {
-            padding: 16px 14px 20px;
+            background: radial-gradient(circle at top left, rgba(148,163,255,0.12) 0, transparent 50%),
+                        radial-gradient(circle at bottom right, rgba(236,72,153,0.12) 0, transparent 55%),
+                        var(--card-bg);
+            border-radius: 22px;
+            padding: 20px 20px 24px;
+            max-width: 900px;
+            width: min(100%, 900px);
+            border: 1px solid var(--card-border);
+            box-shadow:
+                0 28px 80px rgba(15,23,42,0.9),
+                0 0 0 1px rgba(15,23,42,0.9);
+            backdrop-filter: blur(16px);
+        }
+
+        h1 {
+            margin: 0 0 4px;
+            font-size: clamp(22px, 3.2vw, 28px);
+            text-align: center;
+            letter-spacing: 0.08em;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 10px;
+        }
+
+        /* 상단 사이트 네비게이션 */
+        .site-nav {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .site-nav a {
+            color: #9ca3af;
+            text-decoration: none;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(55,65,81,0.8);
+            background: rgba(15,23,42,0.9);
+        }
+        .site-nav a:hover {
+            color: #e5e7eb;
+            border-color: #6366f1;
+        }
+        .site-nav a.active {
+            color: #f9fafb;
+            border-color: #6366f1;
+            background: radial-gradient(circle at top, rgba(248,250,252,0.16), transparent 70%),
+                        linear-gradient(120deg, #4f46e5, #ec4899);
+        }
+
+        /* 상단 탭: 게임 / 랭킹 */
+        .top-tabs {
+            display: inline-flex;
+            background: #020617;
+            border-radius: 999px;
+            padding: 3px;
+            border: 1px solid rgba(55,65,81,0.9);
+            margin: 4px auto 12px;
+        }
+        .top-tab {
+            min-width: 90px;
+            padding: 7px 16px;
+            border-radius: 999px;
+            border: none;
+            background: transparent;
+            color: var(--text-sub);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        .top-tab.active {
+            background: radial-gradient(circle at top, rgba(248,250,252,0.16), transparent 70%),
+                        linear-gradient(120deg, #4f46e5, #ec4899);
+            color: white;
+            box-shadow: 0 10px 24px rgba(79,70,229,0.65);
+        }
+
+        #gameView, #rankView {
+            margin-top: 12px;
+        }
+
+        /* 공통 버튼 & 인풋 등 */
+        .mode-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .mode-btn {
+            flex: 1;
+            border-radius: 999px;
+            border: 1px solid var(--chip-border);
+            background: var(--chip-bg);
+            color: #e5e7eb;
+            padding: 8px 0;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .mode-btn span.icon {
+            font-size: 15px;
+        }
+        .mode-btn.active {
+            background: var(--chip-bg-active);
+            color: #f9fafb;
+            border-color: transparent;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79,70,229,0.7);
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #c7c9ff;
+            margin-bottom: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .status-row span strong { color: white; }
+        .status-row .best { color: #fde68a; }
+
+        .panel {
             border-radius: 18px;
+            background:
+                radial-gradient(circle at top, #111827, #020617);
+            padding: 14px 14px 16px;
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 0 1px rgba(15,23,42,0.8);
         }
+        .panel::before {
+            content:"";
+            position:absolute;
+            inset:-40%;
+            background:
+                radial-gradient(circle at 0 0, rgba(56,189,248,0.07) 0,transparent 60%),
+                radial-gradient(circle at 100% 100%, rgba(251,113,133,0.06) 0, transparent 55%);
+            opacity:0.9;
+            pointer-events:none;
+        }
+        .panel-inner { position: relative; z-index: 1; text-align: center; }
+
+        #sequenceText {
+            font-size: clamp(24px, 7vw, 40px);
+            letter-spacing: 0.18em;
+            margin: 4px 0 6px;
+            min-height: 40px;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: all 0.24s ease-out;
+        }
+        #sequenceText.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #message, #messageColor {
+            font-size: 12px;
+            min-height: 18px;
+            color: #e5e7eb;
+        }
+
+        .input-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        #numberInput {
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #f9fafb;
+            width: 60%;
+            max-width: 260px;
+            text-align: center;
+            font-size: 16px;
+        }
+        #numberInput:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow:
+                0 0 0 1px var(--accent),
+                0 0 16px rgba(129,140,248,0.75);
+        }
+
+        .btn {
+            border-radius: 999px;
+            border: none;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.16s ease;
+            font-weight: 500;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .btn-primary {
+            background: linear-gradient(115deg, #4f46e5, #6366f1);
+            color: #f9fafb;
+            box-shadow: 0 10px 22px rgba(79,70,229,0.75);
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(79,70,229,0.85);
+            filter: brightness(1.03);
+        }
+        .btn-ghost {
+            background: rgba(15,23,42,0.9);
+            color: #e5e7eb;
+            border: 1px solid #4b5563;
+        }
+        .btn-ghost:hover {
+            border-color: rgba(148,163,184,0.9);
+            background: rgba(15,23,42,0.95);
+        }
+
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .controls-row .btn {
+            flex: 1;
+            text-align: center;
+        }
+        @media (min-width: 761px) {
+            .controls-row .btn {
+                flex: 0 0 auto;
+            }
+        }
+
+        .nickname-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+        #nicknameInput {
+            flex: 1;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #f9fafb;
+            font-size: 12px;
+        }
+        #nicknameInput:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px var(--accent);
+        }
+
+        /* 색 패턴 보드 */
+        .color-board-wrapper {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+        }
+        .color-board {
+            width: min(260px, 70vw);
+            aspect-ratio: 1 / 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .color-pad {
+            border-radius: 18px;
+            cursor: pointer;
+            position: relative;
+            opacity: 0.9;
+            transition: all 0.14s ease-out;
+            box-shadow:
+                0 0 0 2px rgba(15,23,42,0.9),
+                0 12px 20px rgba(0,0,0,0.7);
+        }
+        .color-pad span {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            font-size: 11px;
+            color: rgba(15,23,42,0.75);
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.85);
+        }
+
+        .pad-green { background: radial-gradient(circle at 20% 20%, #bbf7d0, #16a34a); }
+        .pad-red   { background: radial-gradient(circle at 20% 20%, #fecaca, #dc2626); }
+        .pad-yellow{ background: radial-gradient(circle at 20% 20%, #fef9c3, #eab308); }
+        .pad-blue  { background: radial-gradient(circle at 20% 20%, #bfdbfe, #2563eb); }
+
+        .color-pad.active {
+            transform: scale(1.06) translateY(-1px);
+            opacity: 1;
+            box-shadow:
+                0 0 22px rgba(255,255,255,0.9),
+                0 18px 28px rgba(15,23,42,0.7);
+        }
+        .color-pad.locked {
+            cursor: default;
+            filter: grayscale(0.32);
+            pointer-events: none;
+            opacity: 0.75;
+        }
+
+        /* 랭킹 화면 스타일 */
         .leaderboard {
-            padding: 10px 10px 12px;
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at top left, rgba(129,140,248,0.18) 0, transparent 55%),
+                #020617;
+            padding: 12px 14px 14px;
+            border: 1px solid rgba(55,65,81,0.9);
+            font-size: 12px;
+            margin-top: 4px;
+            box-shadow: 0 18px 40px rgba(15,23,42,0.95);
         }
-    }
-</style>
+        .leaderboard-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .leaderboard-title h2 {
+            margin: 0;
+            font-size: 15px;
+        }
+
+        .leaderboard-mode-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+        .lb-mode-tab {
+            flex: 1;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 999px;
+            border: 1px solid #374151;
+            cursor: pointer;
+            color: #9ca3af;
+            background: #020617;
+            transition: all 0.16s ease;
+        }
+        .lb-mode-tab.active {
+            background: radial-gradient(circle at top, rgba(248,250,252,0.12), transparent 60%),
+                        linear-gradient(120deg, #4f46e5, #ec4899);
+            color: #f9fafb;
+            border-color: transparent;
+            box-shadow: 0 8px 18px rgba(79,70,229,0.7);
+        }
+
+        .leaderboard-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+        .lb-tab {
+            flex: 1;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 999px;
+            border: 1px solid #374151;
+            cursor: pointer;
+            color: #9ca3af;
+            background: #020617;
+            transition: all 0.16s ease;
+        }
+        .lb-tab.active {
+            background: #111827;
+            color: #e5e7eb;
+            border-color: #6366f1;
+            box-shadow: 0 6px 14px rgba(15,23,42,0.9);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-top: 4px;
+            background: rgba(15,23,42,0.6);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 5px 6px;
+            text-align: left;
+        }
+        th {
+            border-bottom: 1px solid #4b5563;
+            color: #e5e7eb;
+            font-weight: 500;
+            background: rgba(15,23,42,0.95);
+        }
+        td.rank { width: 22px; color: #9ca3af; }
+        tr:nth-child(even) td {
+            background: rgba(15,23,42,0.82);
+        }
+        tr:nth-child(odd) td {
+            background: rgba(15,23,42,0.65);
+        }
+
+        @media (max-width: 640px) {
+            .card {
+                padding: 16px 14px 20px;
+                border-radius: 18px;
+            }
+            .leaderboard {
+                padding: 10px 10px 12px;
+            }
+            .site-nav {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -447,6 +495,15 @@
 <div class="card">
     <h1>두뇌 기억력 게임</h1>
     <div class="subtitle">숫자 기억 · 색 패턴 · 글로벌 랭킹 (PC/모바일 지원)</div>
+
+    <!-- 사이트 상단 네비게이션 -->
+    <nav class="site-nav">
+        <a href="index.html" class="active">게임</a>
+        <a href="about.html">소개</a>
+        <a href="howto.html">게임 규칙</a>
+        <a href="updates.html">업데이트</a>
+        <a href="privacy.html">개인정보 처리방침</a>
+    </nav>
 
     <!-- 상단 탭: 게임 / 랭킹 -->
     <div style="display:flex;justify-content:center;">
@@ -689,7 +746,6 @@ function initAuth() {
         if (user) {
             currentUserUid = user.uid;
             authReady = true;
-            // 랭킹 페이지면 바로 새로고침
             if (rankView.style.display === "block") {
                 loadLeaderboard();
             }
@@ -699,8 +755,6 @@ function initAuth() {
             });
         }
     });
-
-    // 혹시 모를 첫 로그인 트리거
     auth.signInAnonymously().catch(() => {});
 }
 
@@ -732,7 +786,7 @@ async function submitScoreToServer(mode, score) {
                     update.scoreNumber = score;
                     update.updatedAtNumber = firebase.firestore.FieldValue.serverTimestamp();
                 } else {
-                    return; // 더 낮은 점수면 업데이트 안 함
+                    return;
                 }
             } else {
                 const prev = data.scoreColor || 0;
@@ -762,7 +816,6 @@ async function loadLeaderboard() {
         const fieldScore = modeValue === "number" ? "scoreNumber" : "scoreColor";
         const fieldTime  = modeValue === "number" ? "updatedAtNumber" : "updatedAtColor";
 
-        // 우선 상위 100명 정도만 가져온 뒤, 클라이언트에서 기간 필터/정렬
         let query = db.collection("scores")
             .where(fieldScore, ">", 0)
             .orderBy(fieldScore, "desc")
@@ -787,13 +840,12 @@ async function loadLeaderboard() {
             const ts = tsRaw && tsRaw.toDate ? tsRaw.toDate() : null;
 
             if (startDate && ts && ts < startDate) {
-                return; // 기간 필터
+                return;
             }
 
             entries.push({ name, score, ts });
         });
 
-        // 점수 내림차순, 같은 점수면 시간 빠른 순
         entries.sort((a, b) => {
             if (b.score !== a.score) return b.score - a.score;
             if (a.ts && b.ts) return a.ts - b.ts;
