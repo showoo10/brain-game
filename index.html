@@ -10,15 +10,12 @@
         --card-bg: rgba(10, 12, 24, 0.98);
         --card-border: rgba(148, 163, 184, 0.18);
         --accent: #6366f1;
-        --accent-soft: rgba(99,102,241,0.16);
         --accent2: #ec4899;
         --text-main: #f9fafb;
         --text-sub: #9ca3af;
         --chip-bg: #0b1020;
         --chip-border: #33364a;
         --chip-bg-active: linear-gradient(120deg, #4f46e5, #ec4899);
-        --danger: #f97373;
-        --success: #22c55e;
     }
 
     * { box-sizing: border-box; }
@@ -279,7 +276,7 @@
         box-shadow: 0 0 0 1px var(--accent);
     }
 
-    /* 색 패턴 보드: 정사각형 비율 유지 */
+    /* 색 패턴 보드 */
     .color-board-wrapper {
         margin-top: 10px;
         display: flex;
@@ -328,7 +325,7 @@
     .color-pad.locked {
         cursor: default;
         filter: grayscale(0.32);
-        pointer-events: none; /* 클릭 완전 차단 */
+        pointer-events: none;
         opacity: 0.75;
     }
 
@@ -668,35 +665,38 @@ function updateStatusBar() {
     leaderboardModeLabel.textContent = `랭킹: ${rankModeLabel} / ${rangeLabel}`;
 }
 
-/* 랭킹 관련 */
+/* 랭킹 기간 계산 */
 function getRangeStartDate(range) {
     const now = new Date();
     if (range === "today") {
         return new Date(now.getFullYear(), now.getMonth(), now.getDate());
     }
     if (range === "week") {
-        // 최근 7일
         return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     }
     return null; // 전체
 }
 
+/* 점수 서버 전송 (단순 add) */
 async function submitScoreToServer(mode, score) {
     try {
         let name = nicknameInput.value.trim();
         if (!name) name = "익명";
+
         await db.collection("scores").add({
             name,
             mode,  // "number" or "color"
             score,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+
         loadLeaderboard();
     } catch (err) {
         console.error("점수 저장 실패:", err);
     }
 }
 
+/* 랭킹 로딩 */
 async function loadLeaderboard() {
     try {
         const modeValue = currentRankMode === "number" ? "number" : "color";
@@ -708,11 +708,16 @@ async function loadLeaderboard() {
             query = query.where("createdAt", ">=", startDate);
         }
 
-        query = query.orderBy("score", "desc").orderBy("createdAt", "asc").limit(10);
+        query = query
+            .orderBy("score", "desc")
+            .orderBy("createdAt", "asc")
+            .limit(10);
+
         const snap = await query.get();
 
         if (snap.empty) {
-            leaderboardBody.innerHTML = '<tr><td colspan="4">아직 기록이 없습니다. 첫 기록의 주인이 되어보세요!</td></tr>';
+            leaderboardBody.innerHTML =
+                '<tr><td colspan="4">아직 기록이 없습니다. 첫 기록의 주인이 되어보세요!</td></tr>';
             return;
         }
 
@@ -739,7 +744,8 @@ async function loadLeaderboard() {
         leaderboardBody.innerHTML = html;
     } catch (err) {
         console.error("랭킹 불러오기 실패:", err);
-        leaderboardBody.innerHTML = '<tr><td colspan="4">랭킹을 불러올 수 없습니다.</td></tr>';
+        leaderboardBody.innerHTML =
+            '<tr><td colspan="4">랭킹을 불러올 수 없습니다.</td></tr>';
     }
 }
 
