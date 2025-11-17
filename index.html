@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>두뇌 기억력 게임 (랭킹 지원 버전)</title>
+<title>두뇌 기억력 게임 (랭킹 + 모바일 대응)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <style>
     * { box-sizing: border-box; }
     body {
@@ -14,40 +15,46 @@
         align-items: center;
         justify-content: center;
         min-height: 100vh;
+        padding: 10px;
     }
     .card {
         background: rgba(15, 15, 25, 0.95);
         border-radius: 20px;
-        padding: 24px 28px 30px;
+        padding: 18px 18px 22px;
         max-width: 880px;
-        width: 96%;
+        width: min(100%, 880px);
         box-shadow: 0 20px 40px rgba(0,0,0,0.7);
     }
     h1 {
-        margin: 0 0 8px;
-        font-size: 26px;
+        margin: 0 0 6px;
+        font-size: clamp(20px, 3vw, 26px);
         text-align: center;
     }
     .subtitle {
         text-align: center;
-        font-size: 13px;
+        font-size: 12px;
         color: #bbbbd5;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
     }
+
     .layout {
         display: grid;
         grid-template-columns: 1.3fr 1fr;
-        gap: 18px;
+        gap: 14px;
     }
     @media (max-width: 760px) {
         .layout {
             grid-template-columns: 1fr;
         }
+        .card {
+            padding: 14px 12px 18px;
+        }
     }
+
     .mode-tabs {
         display: flex;
-        gap: 8px;
-        margin-bottom: 16px;
+        gap: 6px;
+        margin-bottom: 12px;
     }
     .mode-btn {
         flex: 1;
@@ -55,8 +62,8 @@
         border: 1px solid #33364a;
         background: #151726;
         color: #d6d8ff;
-        padding: 8px 0;
-        font-size: 14px;
+        padding: 7px 0;
+        font-size: 13px;
         cursor: pointer;
         transition: all 0.18s ease;
     }
@@ -67,12 +74,15 @@
         transform: translateY(-1px);
         box-shadow: 0 6px 18px rgba(79,70,229,0.6);
     }
+
     .status-row {
         display: flex;
         justify-content: space-between;
-        font-size: 13px;
+        font-size: 12px;
         color: #c7c9ff;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+        gap: 6px;
+        flex-wrap: wrap;
     }
     .status-row span strong { color: white; }
     .status-row .best { color: #fde68a; }
@@ -80,21 +90,20 @@
     .panel {
         border-radius: 16px;
         background: radial-gradient(circle at top, #1f2937, #030712);
-        padding: 18px 16px 16px;
-        margin-bottom: 16px;
-        min-height: 140px;
+        padding: 14px 12px 14px;
+        margin-bottom: 12px;
         position: relative;
         overflow: hidden;
     }
     .panel-inner { position: relative; z-index: 1; text-align: center; }
 
     #sequenceText {
-        font-size: 40px;
+        font-size: clamp(24px, 7vw, 40px);
         letter-spacing: 0.18em;
-        margin: 10px 0 4px;
-        min-height: 48px;
+        margin: 6px 0 4px;
+        min-height: 40px;
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(8px);
         transition: all 0.22s ease-out;
     }
     #sequenceText.show {
@@ -102,21 +111,27 @@
         transform: translateY(0);
     }
 
+    #message, #messageColor {
+        font-size: 12px;
+        min-height: 18px;
+        color: #e5e7eb;
+    }
+
     .input-row {
         display: flex;
         justify-content: center;
-        gap: 8px;
-        margin-top: 14px;
+        gap: 6px;
+        margin-top: 10px;
     }
     #numberInput {
-        padding: 8px 10px;
+        padding: 7px 10px;
         border-radius: 999px;
         border: 1px solid #4b5563;
         background: #020617;
         color: #f9fafb;
-        width: 170px;
+        width: 55%;
         text-align: center;
-        font-size: 18px;
+        font-size: 16px;
     }
     #numberInput:focus {
         outline: none;
@@ -127,11 +142,12 @@
     .btn {
         border-radius: 999px;
         border: none;
-        padding: 9px 18px;
-        font-size: 14px;
+        padding: 7px 14px;
+        font-size: 13px;
         cursor: pointer;
         transition: all 0.18s ease;
         font-weight: 500;
+        white-space: nowrap;
     }
     .btn-primary {
         background: linear-gradient(110deg, #4f46e5, #6366f1);
@@ -144,27 +160,50 @@
         border: 1px solid #4b5563;
     }
 
-    /* Color mode */
-    .color-board {
+    .controls-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 6px;
+    }
+    .controls-row .btn {
+        flex: 1;
+        text-align: center;
+    }
+    @media (min-width: 761px) {
+        .controls-row .btn {
+            flex: 0 0 auto;
+        }
+    }
+
+    /* 색 패턴 보드: 정사각형 비율 유지 */
+    .color-board-wrapper {
         margin-top: 8px;
-        display: grid;
-        grid-template-columns: repeat(2, 110px);
-        grid-template-rows: repeat(2, 110px);
-        gap: 10px;
+        display: flex;
         justify-content: center;
     }
+    .color-board {
+        width: min(260px, 70vw);
+        aspect-ratio: 1 / 1;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 8px;
+    }
     .color-pad {
-        border-radius: 18px;
+        border-radius: 16px;
         cursor: pointer;
         position: relative;
-        opacity: 0.88;
+        opacity: 0.9;
         transition: all 0.12s ease-out;
+        box-shadow: 0 0 0 2px rgba(15,23,42,0.85),
+                    0 8px 16px rgba(0,0,0,0.6);
     }
     .color-pad span {
         position: absolute;
-        bottom: 8px;
-        right: 10px;
-        font-size: 11px;
+        bottom: 6px;
+        right: 8px;
+        font-size: 10px;
         color: rgba(15,23,42,0.7);
         font-weight: 600;
         text-shadow: 0 1px 2px rgba(255,255,255,0.7);
@@ -180,40 +219,81 @@
         opacity: 1;
         box-shadow: 0 0 18px white;
     }
-    .color-pad.locked { cursor: default; filter: grayscale(0.25); }
-
-    .controls-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 6px;
+    .color-pad.locked {
+        cursor: default;
+        filter: grayscale(0.25);
+        pointer-events: none; /* 클릭 완전 차단 */
     }
 
     /* 랭킹 영역 */
     .leaderboard {
         border-radius: 16px;
         background: #020617;
-        padding: 14px 16px 16px;
+        padding: 10px 12px 12px;
         border: 1px solid #1f2933;
-        font-size: 13px;
+        font-size: 12px;
     }
     .leaderboard-title {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
+        gap: 4px;
+        flex-wrap: wrap;
     }
     .leaderboard-title h2 {
         margin: 0;
-        font-size: 15px;
+        font-size: 14px;
     }
-    .leaderboard small {
+
+    .leaderboard-mode-tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 4px;
+        font-size: 11px;
+    }
+    .lb-mode-tab {
+        flex: 1;
+        text-align: center;
+        padding: 4px 0;
+        border-radius: 999px;
+        border: 1px solid #374151;
+        cursor: pointer;
         color: #9ca3af;
+        background: transparent;
     }
+    .lb-mode-tab.active {
+        background: #111827;
+        color: #e5e7eb;
+        border-color: #6366f1;
+    }
+
+    .leaderboard-tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 6px;
+        font-size: 11px;
+    }
+    .lb-tab {
+        flex: 1;
+        text-align: center;
+        padding: 4px 0;
+        border-radius: 999px;
+        border: 1px solid #374151;
+        cursor: pointer;
+        color: #9ca3af;
+        background: transparent;
+    }
+    .lb-tab.active {
+        background: #111827;
+        color: #e5e7eb;
+        border-color: #6366f1;
+    }
+
     .nickname-row {
         display: flex;
-        gap: 6px;
-        margin-bottom: 8px;
+        gap: 4px;
+        margin-bottom: 6px;
         align-items: center;
     }
     #nicknameInput {
@@ -223,21 +303,22 @@
         border: 1px solid #4b5563;
         background: #020617;
         color: #f9fafb;
-        font-size: 13px;
+        font-size: 12px;
     }
     #nicknameInput:focus {
         outline: none;
         border-color: #6366f1;
         box-shadow: 0 0 0 1px #6366f1;
     }
+
     table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 12px;
+        font-size: 11px;
         margin-top: 4px;
     }
     th, td {
-        padding: 4px 6px;
+        padding: 3px 4px;
         text-align: left;
     }
     th {
@@ -245,10 +326,7 @@
         color: #e5e7eb;
         font-weight: 500;
     }
-    td.rank {
-        width: 24px;
-        color: #9ca3af;
-    }
+    td.rank { width: 18px; color: #9ca3af; }
     tr:nth-child(even) td {
         background: rgba(15,23,42,0.6);
     }
@@ -259,7 +337,7 @@
 
 <div class="card">
     <h1>두뇌 기억력 게임</h1>
-    <div class="subtitle">숫자 기억 + 색 패턴 + 글로벌 랭킹</div>
+    <div class="subtitle">숫자 기억 + 색 패턴 + 글로벌 랭킹 (PC/모바일 지원)</div>
 
     <div class="layout">
         <!-- 왼쪽: 게임 영역 -->
@@ -288,11 +366,13 @@
 
                 <div class="panel-inner" id="panelColor" style="display:none;">
                     <div id="messageColor">게임 시작을 누르면 패턴이 표시됩니다.</div>
-                    <div class="color-board">
-                        <div class="color-pad pad-green" data-idx="0"><span>1</span></div>
-                        <div class="color-pad pad-red" data-idx="1"><span>2</span></div>
-                        <div class="color-pad pad-yellow" data-idx="2"><span>3</span></div>
-                        <div class="color-pad pad-blue" data-idx="3"><span>4</span></div>
+                    <div class="color-board-wrapper">
+                        <div class="color-board">
+                            <div class="color-pad pad-green" data-idx="0"><span>1</span></div>
+                            <div class="color-pad pad-red" data-idx="1"><span>2</span></div>
+                            <div class="color-pad pad-yellow" data-idx="2"><span>3</span></div>
+                            <div class="color-pad pad-blue" data-idx="3"><span>4</span></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -307,16 +387,29 @@
         <!-- 오른쪽: 랭킹 영역 -->
         <div class="leaderboard">
             <div class="leaderboard-title">
-                <h2>현재 모드 랭킹 TOP 10</h2>
-                <small id="leaderboardModeLabel">모드: 숫자 기억</small>
+                <h2>랭킹 TOP 10</h2>
+                <small id="leaderboardModeLabel">랭킹: 숫자 기억 / 전체</small>
+            </div>
+
+            <!-- 랭킹 모드 탭 (숫자/색) -->
+            <div class="leaderboard-mode-tabs">
+                <button class="lb-mode-tab active" data-rank-mode="number" id="lbModeNumber">숫자 기억</button>
+                <button class="lb-mode-tab" data-rank-mode="color" id="lbModeColor">색 패턴</button>
+            </div>
+
+            <!-- 기간 탭 -->
+            <div class="leaderboard-tabs">
+                <button class="lb-tab active" data-range="all" id="lbTabAll">전체</button>
+                <button class="lb-tab" data-range="week" id="lbTabWeek">이번 주</button>
+                <button class="lb-tab" data-range="today" id="lbTabToday">오늘</button>
             </div>
 
             <div class="nickname-row">
-                <span>닉네임</span>
+                <span style="white-space:nowrap;">닉네임</span>
                 <input id="nicknameInput" placeholder="예: 시호">
-                <button class="btn btn-ghost" id="btnSaveName" style="padding:6px 10px;font-size:12px;">저장</button>
+                <button class="btn btn-ghost" id="btnSaveName" style="padding:5px 8px;font-size:11px;">저장</button>
             </div>
-            <small>※ 점수는 게임에서 실패했을 때 자동으로 서버에 올라갑니다.</small>
+            <small>※ 점수는 게임에서 실패했을 때 서버에 자동 저장됩니다.</small>
 
             <table>
                 <thead>
@@ -335,32 +428,29 @@
     </div>
 </div>
 
-<!-- Firebase CDN (compat 버전, v10 예시) -->
+<!-- Firebase CDN (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <script>
-/* ===============================
-   0. Firebase 초기화
-   =============================== */
-
+/* 0. Firebase 초기화: 시호님 프로젝트 config 그대로 적용 */
 const firebaseConfig = {
   apiKey: "AIzaSyAbGHsDFmQlXySnIK6y_hZMC4SNK7px-P4",
-    authDomain: "brain-game-57799.firebaseapp.com",
-    projectId: "brain-game-57799",
-    storageBucket: "brain-game-57799.firebasestorage.app",
-    messagingSenderId: "577688993292",
-    appId: "1:577688993292:web:1c6647e31238b0e0407829",
-    measurementId: "G-DRQ9NCX5YG"
+  authDomain: "brain-game-57799.firebaseapp.com",
+  projectId: "brain-game-57799",
+  storageBucket: "brain-game-57799.firebasestorage.app",
+  messagingSenderId: "577688993292",
+  appId: "1:577688993292:web:1c6647e31238b0e0407829",
+  measurementId: "G-DRQ9NCX5YG"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-/* ===============================
-   1. 공통 상태 변수
-   =============================== */
-let currentMode = "number"; 
+/* 1. 상태 변수 및 DOM 참조 */
+let currentMode = "number";       // 실제 게임 모드
+let currentRankMode = "number";   // 랭킹 모드 탭 (숫자/색)
+let currentRange = "all";         // all / week / today
+
 let levelNumber = 1;
 let levelColor = 1;
 let bestNumber = 0;
@@ -376,24 +466,30 @@ const btnStart = document.getElementById("btnStart");
 const btnStartBest = document.getElementById("btnStartBest");
 const btnReset = document.getElementById("btnReset");
 
-/* 숫자 모드 요소 */
 const seqText = document.getElementById("sequenceText");
 const msg = document.getElementById("message");
 const numberInputRow = document.getElementById("numberInputRow");
 const numberInput = document.getElementById("numberInput");
 const btnSubmitNumber = document.getElementById("btnSubmitNumber");
 
-/* 색 모드 요소 */
 const panelNumber = document.getElementById("panelNumber");
 const panelColor = document.getElementById("panelColor");
 const msgColor = document.getElementById("messageColor");
 const pads = Array.from(document.querySelectorAll(".color-pad"));
 
-/* 랭킹 UI 요소 */
 const nicknameInput = document.getElementById("nicknameInput");
 const btnSaveName = document.getElementById("btnSaveName");
 const leaderboardBody = document.getElementById("leaderboardBody");
 const leaderboardModeLabel = document.getElementById("leaderboardModeLabel");
+
+const lbModeNumber = document.getElementById("lbModeNumber");
+const lbModeColor = document.getElementById("lbModeColor");
+const lbModeTabs = [lbModeNumber, lbModeColor];
+
+const lbTabAll = document.getElementById("lbTabAll");
+const lbTabWeek = document.getElementById("lbTabWeek");
+const lbTabToday = document.getElementById("lbTabToday");
+const lbTabs = [lbTabAll, lbTabWeek, lbTabToday];
 
 let currentSequence = "";
 let acceptingNumberInput = false;
@@ -402,58 +498,69 @@ let colorSequence = [];
 let userColorIndex = 0;
 let acceptingColorInput = false;
 
-/* ===============================
-   2. 로컬 최고레벨 & 닉네임 저장
-   =============================== */
+/* 2. 로컬 저장 (최고레벨 & 닉네임) */
 function loadLocalSettings() {
     bestNumber = parseInt(localStorage.getItem("brainGame_best_number") || "0", 10);
     bestColor = parseInt(localStorage.getItem("brainGame_best_color") || "0", 10);
     const storedName = localStorage.getItem("brainGame_nickname") || "";
     nicknameInput.value = storedName;
 }
-
 function saveBestScores() {
     localStorage.setItem("brainGame_best_number", bestNumber.toString());
     localStorage.setItem("brainGame_best_color", bestColor.toString());
 }
-
 function saveNickname() {
     const name = nicknameInput.value.trim();
     localStorage.setItem("brainGame_nickname", name);
 }
 
-/* ===============================
-   3. UI 공통 업데이트
-   =============================== */
+/* 3. UI 상태 업데이트 */
 function updateStatusBar() {
+    const rangeLabel =
+        currentRange === "all" ? "전체" :
+        currentRange === "week" ? "이번 주" :
+        "오늘";
+
+    // 게임 쪽 표시 (현재 플레이 중인 모드)
     if (currentMode === "number") {
         modeLabel.textContent = "숫자 기억";
         levelLabel.textContent = levelNumber;
         bestLabel.textContent = bestNumber;
-        leaderboardModeLabel.textContent = "모드: 숫자 기억";
     } else {
         modeLabel.textContent = "색 패턴";
         levelLabel.textContent = levelColor;
         bestLabel.textContent = bestColor;
-        leaderboardModeLabel.textContent = "모드: 색 패턴";
     }
+
+    // 랭킹 쪽 표시 (랭킹 탭에서 선택한 모드 기준)
+    const rankModeLabel = currentRankMode === "number" ? "숫자 기억" : "색 패턴";
+    leaderboardModeLabel.textContent = `랭킹: ${rankModeLabel} / ${rangeLabel}`;
 }
 
-/* ===============================
-   4. 랭킹 관련 함수
-   =============================== */
+/* 4. 랭킹 관련 */
+function getRangeStartDate(range) {
+    const now = new Date();
+    if (range === "today") {
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+    if (range === "week") {
+        // 최근 7일
+        return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    }
+    return null; // 전체
+}
+
 async function submitScoreToServer(mode, score) {
     try {
         let name = nicknameInput.value.trim();
         if (!name) name = "익명";
-
         await db.collection("scores").add({
             name,
-            mode,          // "number" or "color"
-            score,         // 도달 레벨
+            mode,  // "number" or "color"
+            score,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        loadLeaderboard(); // 갱신
+        loadLeaderboard();
     } catch (err) {
         console.error("점수 저장 실패:", err);
     }
@@ -461,15 +568,18 @@ async function submitScoreToServer(mode, score) {
 
 async function loadLeaderboard() {
     try {
-        const modeValue = currentMode === "number" ? "number" : "color";
+        const modeValue = currentRankMode === "number" ? "number" : "color";
         leaderboardBody.innerHTML = '<tr><td colspan="4">불러오는 중...</td></tr>';
 
-        const snap = await db.collection("scores")
-            .where("mode", "==", modeValue)
-            .orderBy("score", "desc")
-            .orderBy("createdAt", "asc")
-            .limit(10)
-            .get();
+        let query = db.collection("scores").where("mode", "==", modeValue);
+
+        const startDate = getRangeStartDate(currentRange);
+        if (startDate) {
+            query = query.where("createdAt", ">=", startDate);
+        }
+
+        query = query.orderBy("score", "desc").orderBy("createdAt", "asc").limit(10);
+        const snap = await query.get();
 
         if (snap.empty) {
             leaderboardBody.innerHTML = '<tr><td colspan="4">아직 기록이 없습니다. 첫 기록의 주인이 되어보세요!</td></tr>';
@@ -486,7 +596,6 @@ async function loadLeaderboard() {
             const timeStr = ts
                 ? `${ts.getFullYear()}.${String(ts.getMonth()+1).padStart(2,'0')}.${String(ts.getDate()).padStart(2,'0')} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}`
                 : "-";
-
             html += `
                 <tr>
                     <td class="rank">${rank}</td>
@@ -497,7 +606,6 @@ async function loadLeaderboard() {
             `;
             rank++;
         });
-
         leaderboardBody.innerHTML = html;
     } catch (err) {
         console.error("랭킹 불러오기 실패:", err);
@@ -505,9 +613,7 @@ async function loadLeaderboard() {
     }
 }
 
-/* ===============================
-   5. 모드 전환
-   =============================== */
+/* 5. 게임 모드 전환 (왼쪽) */
 function switchMode(mode) {
     currentMode = mode;
 
@@ -524,14 +630,38 @@ function switchMode(mode) {
         panelColor.style.display = "block";
         resetColorUI();
     }
+    updateStatusBar();
+}
 
+/* 6. 랭킹 모드 탭 전환 (오른쪽 숫자/색) */
+function switchRankMode(mode) {
+    currentRankMode = mode;
+    lbModeTabs.forEach(tab => {
+        if (tab.getAttribute("data-rank-mode") === mode) {
+            tab.classList.add("active");
+        } else {
+            tab.classList.remove("active");
+        }
+    });
     updateStatusBar();
     loadLeaderboard();
 }
 
-/* ===============================
-   6. 숫자 모드 로직
-   =============================== */
+/* 7. 랭킹 기간 탭 전환 (전체/주/오늘) */
+function switchRange(range) {
+    currentRange = range;
+    lbTabs.forEach(tab => {
+        if (tab.getAttribute("data-range") === range) {
+            tab.classList.add("active");
+        } else {
+            tab.classList.remove("active");
+        }
+    });
+    updateStatusBar();
+    loadLeaderboard();
+}
+
+/* 8. 숫자 모드 로직 */
 function resetNumberUI() {
     seqText.textContent = "";
     seqText.classList.remove("show");
@@ -559,7 +689,8 @@ function startNumberRound() {
     seqText.textContent = currentSequence.split("").join(" ");
     setTimeout(() => seqText.classList.add("show"), 30);
 
-    const showTime = 900 + len * 250;
+    // 레벨/숫자 길이에 따라 표시 시간 더 넉넉하게
+    const showTime = 1200 + len * 400;
 
     setTimeout(() => {
         seqText.classList.remove("show");
@@ -570,17 +701,15 @@ function startNumberRound() {
             numberInput.value = "";
             numberInput.focus();
             acceptingNumberInput = true;
-        }, 230);
+        }, 220);
     }, showTime);
 }
 
 function checkNumberAnswer() {
     if (!acceptingNumberInput) return;
-
     const user = numberInput.value.trim().replace(/\s+/g, "");
     acceptingNumberInput = false;
-
-    const reachedLevel = levelNumber - 1; // 틀릴 경우 이게 최종 도달 레벨
+    const reachedLevel = levelNumber - 1;
 
     if (user === currentSequence) {
         msg.textContent = "정답! 레벨업 🎉";
@@ -602,18 +731,14 @@ function checkNumberAnswer() {
         }
         levelNumber = 1;
         updateStatusBar();
-
-        // 서버에 점수 저장
         submitScoreToServer("number", score);
     }
 }
 
-/* ===============================
-   7. 색 패턴 모드 로직
-   =============================== */
+/* 9. 색 패턴 모드 로직 */
 function resetColorUI() {
     msgColor.textContent = "게임 시작을 누르면 패턴이 표시됩니다.";
-    pads.forEach(p => p.classList.add("locked"));
+    pads.forEach(p => p.classList.add("locked")); // 기본 잠금
     colorSequence = [];
     acceptingColorInput = false;
     userColorIndex = 0;
@@ -629,9 +754,9 @@ function flashPad(idx, delay) {
 
 function playColorSequence() {
     acceptingColorInput = false;
-    pads.forEach(p => p.classList.add("locked"));
-
+    pads.forEach(p => p.classList.add("locked")); // 재생 중 잠금
     msgColor.textContent = "패턴을 잘 보세요...";
+
     let t = 300;
     colorSequence.forEach(idx => {
         flashPad(idx, t);
@@ -641,7 +766,7 @@ function playColorSequence() {
     setTimeout(() => {
         msgColor.textContent = "같은 순서로 눌러보세요.";
         acceptingColorInput = true;
-        pads.forEach(p => p.classList.remove("locked"));
+        pads.forEach(p => p.classList.remove("locked")); // 이제 클릭 가능
         userColorIndex = 0;
     }, t + 150);
 }
@@ -655,15 +780,13 @@ function startColorRound() {
     for (let i = 0; i < targetLength; i++) {
         colorSequence.push(Math.floor(Math.random() * 4));
     }
-
     playColorSequence();
 }
 
 function handlePadClick(e) {
-    if (!acceptingColorInput) return;
+    if (!acceptingColorInput) return; // ON 아닐 때 무시
 
     const idx = parseInt(e.currentTarget.getAttribute("data-idx"), 10);
-
     e.currentTarget.classList.add("active");
     setTimeout(() => e.currentTarget.classList.remove("active"), 160);
 
@@ -673,20 +796,20 @@ function handlePadClick(e) {
         userColorIndex++;
 
         if (userColorIndex === colorSequence.length) {
+            // 정답 끝 → 바로 잠금
             acceptingColorInput = false;
             pads.forEach(p => p.classList.add("locked"));
-            msgColor.textContent = "정답! 패턴이 길어집니다.";
+            msgColor.textContent = "정답! 다음 패턴을 준비 중입니다.";
             levelColor++;
-
             if (levelColor - 1 > bestColor) {
                 bestColor = levelColor - 1;
                 saveBestScores();
             }
-
             updateStatusBar();
             setTimeout(startColorRound, 900);
         }
     } else {
+        // 오답 → 바로 잠금
         acceptingColorInput = false;
         pads.forEach(p => p.classList.add("locked"));
         msgColor.textContent = "틀렸습니다! 다시 처음부터.";
@@ -699,15 +822,11 @@ function handlePadClick(e) {
         levelColor = 1;
         updateStatusBar();
         colorSequence = [];
-
-        // 서버에 점수 저장
         submitScoreToServer("color", score);
     }
 }
 
-/* ===============================
-   8. 최고레벨에서 재도전
-   =============================== */
+/* 10. 최고레벨에서 재도전 */
 btnStartBest.addEventListener("click", () => {
     if (currentMode === "number") {
         if (bestNumber <= 0) {
@@ -730,22 +849,15 @@ btnStartBest.addEventListener("click", () => {
     }
 });
 
-/* ===============================
-   9. 버튼/이벤트 연결
-   =============================== */
+/* 11. 이벤트 연결 */
 btnStart.addEventListener("click", () => {
-    if (currentMode === "number") {
-        startNumberRound();
-    } else {
-        startColorRound();
-    }
+    if (currentMode === "number") startNumberRound();
+    else startColorRound();
 });
-
 btnSubmitNumber.addEventListener("click", checkNumberAnswer);
 numberInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") checkNumberAnswer();
 });
-
 pads.forEach(p => p.addEventListener("click", handlePadClick));
 
 btnModeNumber.addEventListener("click", () => switchMode("number"));
@@ -765,14 +877,28 @@ btnReset.addEventListener("click", () => {
 
 btnSaveName.addEventListener("click", () => {
     saveNickname();
-    alert("닉네임이 저장되었습니다. 이제 기록이 서버에 이 이름으로 올라갑니다.");
+    alert("닉네임이 저장되었습니다. 이제 기록이 이 이름으로 올라갑니다.");
 });
 
-/* ===============================
-   10. 초기화
-   =============================== */
+lbModeTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+        const mode = tab.getAttribute("data-rank-mode");
+        switchRankMode(mode);
+    });
+});
+
+lbTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+        const range = tab.getAttribute("data-range");
+        switchRange(range);
+    });
+});
+
+/* 12. 초기화 */
 loadLocalSettings();
-switchMode("number");
+switchMode("number");      // 게임 기본 모드
+switchRankMode("number");  // 랭킹 기본 모드
+switchRange("all");        // 랭킹 기본 기간
 updateStatusBar();
 loadLeaderboard();
 </script>
