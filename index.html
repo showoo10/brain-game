@@ -2,24 +2,40 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>두뇌 기억력 게임 - 숫자 기억 & 색 패턴 글로벌 랭킹</title>
+    <title>랜덤게임 - 두뇌 기억력 게임 (숫자 기억 & 색 패턴 글로벌 랭킹)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- SEO 기본 -->
-    <meta name="title" content="두뇌 기억력 게임 - 숫자 기억 & 색 패턴 글로벌 랭킹">
-    <meta name="description" content="두뇌 기억력 게임! 숫자 기억, 색 패턴, 글로벌 랭킹 기능 제공. PC/모바일 완전 지원. 지금 바로 기억력 테스트 해보세요.">
-    <meta name="keywords" content="기억력 게임, 두뇌 게임, 숫자 기억, 색 패턴, 브레인 게임, brain game, 기억력 테스트, 랭킹 게임, 웹게임">
+    <meta name="title" content="랜덤게임 - 두뇌 기억력 게임 (숫자 기억 & 색 패턴)">
+    <meta name="description" content="랜덤게임: 숫자 기억, 색 패턴 등 두뇌 기억력 게임을 즐길 수 있는 웹 게임입니다. PC/모바일 모두 지원하며, 글로벌 랭킹 시스템으로 친구들과 기록을 겨뤄보세요.">
+    <meta name="keywords" content="랜덤게임, 기억력 게임, 두뇌 게임, 숫자 기억, 색 패턴, 브레인 게임, brain game, 기억력 테스트, 랭킹 게임, 웹게임">
     <meta name="robots" content="index, follow">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://showoo10.github.io/brain-game/">
 
     <!-- SNS 미리보기 (카톡/페북 등에서 공유 시) -->
-    <meta property="og:title" content="두뇌 기억력 게임 - 숫자 기억 & 색 패턴">
-    <meta property="og:description" content="숫자 기억 + 색 패턴 + 글로벌 랭킹! 모바일/PC 완전 지원.">
+    <meta property="og:title" content="랜덤게임 - 두뇌 기억력 게임">
+    <meta property="og:description" content="숫자 기억 + 색 패턴 + 글로벌 랭킹! PC/모바일 완전 지원 두뇌 랜덤게임.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://showoo10.github.io/brain-game/">
     <meta property="og:image" content="https://showoo10.github.io/brain-game/og-image.png">
+
+    <!-- 구조화 데이터 (검색엔진 이해도 향상용) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "랜덤게임 - 두뇌 기억력 게임",
+      "url": "https://showoo10.github.io/brain-game/",
+      "applicationCategory": "Game",
+      "operatingSystem": "Web",
+      "inLanguage": "ko",
+      "genre": ["Puzzle", "BrainGame"],
+      "description": "랜덤게임: 숫자 기억, 색 패턴 등 두뇌 기억력 게임을 즐길 수 있는 웹 게임입니다. PC/모바일 모두 지원하며 글로벌 랭킹 시스템을 제공합니다.",
+      "image": "https://showoo10.github.io/brain-game/og-image.png"
+    }
+    </script>
 
     <style>
         :root {
@@ -78,7 +94,6 @@
             margin-bottom: 10px;
         }
 
-        /* 상단 사이트 네비게이션 */
         .site-nav {
             display: flex;
             justify-content: center;
@@ -106,7 +121,6 @@
                         linear-gradient(120deg, #4f46e5, #ec4899);
         }
 
-        /* 상단 탭: 게임 / 랭킹 */
         .top-tabs {
             display: inline-flex;
             background: #020617;
@@ -201,7 +215,6 @@
         }
         .panel-inner { position: relative; z-index: 1; text-align: center; }
 
-        /* 🔒 숫자 복사 방지 */
         #sequenceText {
             font-size: clamp(24px, 7vw, 40px);
             letter-spacing: 0.18em;
@@ -324,7 +337,6 @@
             box-shadow: 0 0 0 1px var(--accent);
         }
 
-        /* 색 패턴 보드 */
         .color-board-wrapper {
             margin-top: 10px;
             display: flex;
@@ -377,7 +389,6 @@
             opacity: 0.75;
         }
 
-        /* 랭킹 화면 스타일 */
         .leaderboard {
             border-radius: 18px;
             background:
@@ -493,10 +504,9 @@
 <body>
 
 <div class="card">
-    <h1>두뇌 기억력 게임</h1>
-    <div class="subtitle">숫자 기억 · 색 패턴 · 글로벌 랭킹 (PC/모바일 지원)</div>
+    <h1>랜덤게임</h1>
+    <div class="subtitle">숫자 기억 · 색 패턴 · 글로벌 랭킹 두뇌 게임 (PC/모바일 지원)</div>
 
-    <!-- 사이트 상단 네비게이션 -->
     <nav class="site-nav">
         <a href="index.html" class="active">게임</a>
         <a href="about.html">소개</a>
@@ -506,7 +516,6 @@
         <a href="terms.html">이용약관</a>
     </nav>
 
-    <!-- 상단 탭: 게임 / 랭킹 -->
     <div style="display:flex;justify-content:center;">
         <div class="top-tabs">
             <button class="top-tab active" id="tabGame">게임</button>
@@ -514,7 +523,6 @@
         </div>
     </div>
 
-    <!-- 🎮 게임 화면 -->
     <div id="gameView">
         <div class="mode-tabs">
             <button class="mode-btn active" id="btnModeNumber">
@@ -571,7 +579,6 @@
         </div>
     </div>
 
-    <!-- 📊 랭킹 화면 -->
     <div id="rankView" style="display:none;">
         <div class="leaderboard">
             <div class="leaderboard-title">
@@ -579,13 +586,11 @@
                 <small id="leaderboardModeLabel">랭킹: 숫자 기억 / 전체</small>
             </div>
 
-            <!-- 랭킹 모드 탭 (숫자/색) -->
             <div class="leaderboard-mode-tabs">
                 <button class="lb-mode-tab active" data-rank-mode="number" id="lbModeNumber">숫자 기억</button>
                 <button class="lb-mode-tab" data-rank-mode="color" id="lbModeColor">색 패턴</button>
             </div>
 
-            <!-- 기간 탭 -->
             <div class="leaderboard-tabs">
                 <button class="lb-tab active" data-range="all" id="lbTabAll">전체</button>
                 <button class="lb-tab" data-range="week" id="lbTabWeek">이번 주</button>
@@ -615,7 +620,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <script>
-/* Firebase 초기화 (시호님 프로젝트) */
 const firebaseConfig = {
   apiKey: "AIzaSyAbGHsDFmQlXySnIK6y_hZMC4SNK7px-P4",
   authDomain: "brain-game-57799.firebaseapp.com",
@@ -629,14 +633,12 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* 익명 로그인 상태 */
 let currentUserUid = null;
 let authReady = false;
 
-/* 상태 변수 & DOM 참조 */
-let currentMode = "number";       // 실제 게임 모드
-let currentRankMode = "number";   // 랭킹 모드 탭 (숫자/색)
-let currentRange = "all";         // all / week / today
+let currentMode = "number";
+let currentRankMode = "number";
+let currentRange = "all";
 
 let levelNumber = 1;
 let levelColor = 1;
@@ -690,7 +692,7 @@ let colorSequence = [];
 let userColorIndex = 0;
 let acceptingColorInput = false;
 
-/* 🔒 전역 복사/붙여넣기/잘라내기/우클릭 방지 */
+/* 전역 복사/붙여넣기/잘라내기/우클릭 방지 */
 document.addEventListener("copy", (e) => e.preventDefault());
 document.addEventListener("cut", (e) => e.preventDefault());
 document.addEventListener("paste", (e) => e.preventDefault());
@@ -701,7 +703,6 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-/* 로컬 저장 (최고레벨 & 닉네임) */
 function loadLocalSettings() {
     bestNumber = parseInt(localStorage.getItem("brainGame_best_number") || "0", 10);
     bestColor = parseInt(localStorage.getItem("brainGame_best_color") || "0", 10);
@@ -717,7 +718,6 @@ function saveNickname() {
     localStorage.setItem("brainGame_nickname", name);
 }
 
-/* UI 상태 업데이트 */
 function updateStatusBar() {
     const rangeLabel =
         currentRange === "all" ? "전체" :
@@ -738,7 +738,6 @@ function updateStatusBar() {
     leaderboardModeLabel.textContent = `랭킹: ${rankModeLabel} / ${rangeLabel}`;
 }
 
-/* 랭킹 기간 계산 */
 function getRangeStartDate(range) {
     const now = new Date();
     if (range === "today") {
@@ -750,7 +749,6 @@ function getRangeStartDate(range) {
     return null;
 }
 
-/* 🔐 익명 로그인 초기화 */
 function initAuth() {
     auth.onAuthStateChanged((user) => {
         if (user) {
@@ -768,7 +766,6 @@ function initAuth() {
     auth.signInAnonymously().catch(() => {});
 }
 
-/* 점수 서버 전송 (uid당 1문서, 모드별 최고점만 유지) */
 async function submitScoreToServer(mode, score) {
     try {
         if (!authReady || !currentUserUid) {
@@ -785,27 +782,19 @@ async function submitScoreToServer(mode, score) {
             const snap = await tx.get(ref);
             const data = snap.exists ? snap.data() : {};
 
-            const update = {
-                uid,
-                name
-            };
+            const update = { uid, name };
 
             if (mode === "number") {
                 const prev = data.scoreNumber || 0;
                 if (score > prev) {
                     update.scoreNumber = score;
                     update.updatedAtNumber = firebase.firestore.FieldValue.serverTimestamp();
-                } else {
-                    // 점수는 그대로지만 닉네임/uid만 최신화
-                    // 별도 처리 없이 merge set에서 반영됨
                 }
             } else {
                 const prev = data.scoreColor || 0;
                 if (score > prev) {
                     update.scoreColor = score;
                     update.updatedAtColor = firebase.firestore.FieldValue.serverTimestamp();
-                } else {
-                    // 동일: 점수 미갱신 시에도 이름은 최신화
                 }
             }
 
@@ -818,7 +807,6 @@ async function submitScoreToServer(mode, score) {
     }
 }
 
-/* 🔥 랭킹 로딩 */
 async function loadLeaderboard() {
     try {
         const modeValue = currentRankMode === "number" ? "number" : "color";
@@ -850,9 +838,7 @@ async function loadLeaderboard() {
             const tsRaw = data[fieldTime];
             const ts = tsRaw && tsRaw.toDate ? tsRaw.toDate() : null;
 
-            if (startDate && ts && ts < startDate) {
-                return;
-            }
+            if (startDate && ts && ts < startDate) return;
 
             entries.push({ name, score, ts });
         });
@@ -899,7 +885,6 @@ async function loadLeaderboard() {
     }
 }
 
-/* 상단 탭 전환: 게임 / 랭킹 */
 function switchTopTab(tab) {
     if (tab === "game") {
         tabGame.classList.add("active");
@@ -915,7 +900,6 @@ function switchTopTab(tab) {
     }
 }
 
-/* 게임 모드 전환 (숫자/색) */
 function switchMode(mode) {
     currentMode = mode;
 
@@ -935,7 +919,6 @@ function switchMode(mode) {
     updateStatusBar();
 }
 
-/* 랭킹 모드 탭 전환 (숫자/색) */
 function switchRankMode(mode) {
     currentRankMode = mode;
     lbModeTabs.forEach(tab => {
@@ -949,7 +932,6 @@ function switchRankMode(mode) {
     loadLeaderboard();
 }
 
-/* 랭킹 기간 탭 전환 */
 function switchRange(range) {
     currentRange = range;
     lbTabs.forEach(tab => {
@@ -963,7 +945,6 @@ function switchRange(range) {
     loadLeaderboard();
 }
 
-/* 숫자 모드 로직 */
 function resetNumberUI() {
     seqText.textContent = "";
     seqText.classList.remove("show");
@@ -1036,7 +1017,6 @@ function checkNumberAnswer() {
     }
 }
 
-/* 색 패턴 모드 로직 */
 function resetColorUI() {
     msgColor.textContent = "게임 시작을 누르면 패턴이 표시됩니다.";
     pads.forEach(p => p.classList.add("locked"));
@@ -1095,7 +1075,6 @@ function handlePadClick(e) {
 
     if (idx === colorSequence[userColorIndex]) {
         userColorIndex++;
-
         if (userColorIndex === colorSequence.length) {
             acceptingColorInput = false;
             pads.forEach(p => p.classList.add("locked"));
@@ -1148,7 +1127,6 @@ btnStartBest.addEventListener("click", () => {
     }
 });
 
-/* 이벤트 연결 */
 tabGame.addEventListener("click", () => switchTopTab("game"));
 tabRank.addEventListener("click", () => switchTopTab("rank"));
 
@@ -1159,22 +1137,13 @@ btnStart.addEventListener("click", () => {
 btnSubmitNumber.addEventListener("click", checkNumberAnswer);
 numberInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") checkNumberAnswer();
-
-    // 🔒 키보드 붙여넣기 방지 (Ctrl+V / Cmd+V)
     if ((e.ctrlKey || e.metaKey) && (e.key === "v" || e.key === "V")) {
         e.preventDefault();
     }
 });
+numberInput.addEventListener("paste", (e) => e.preventDefault());
+numberInput.addEventListener("contextmenu", (e) => e.preventDefault());
 
-/* 🔒 입력창 붙여넣기 및 우클릭 방지 */
-numberInput.addEventListener("paste", (e) => {
-    e.preventDefault();
-});
-numberInput.addEventListener("contextmenu", (e) => {
-    e.preventDefault();
-});
-
-/* 🔒 숫자 표시 영역 우클릭/복사 방지 */
 seqText.addEventListener("copy", (e) => e.preventDefault());
 seqText.addEventListener("cut", (e) => e.preventDefault());
 seqText.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -1196,7 +1165,6 @@ btnReset.addEventListener("click", () => {
     updateStatusBar();
 });
 
-/* 🔄 닉네임 저장 시 Firestore에도 즉시 반영 */
 btnSaveName.addEventListener("click", async () => {
     saveNickname();
     let name = nicknameInput.value.trim();
@@ -1205,10 +1173,7 @@ btnSaveName.addEventListener("click", async () => {
     if (authReady && currentUserUid) {
         try {
             const uid = currentUserUid;
-            await db.collection("scores").doc(uid).set(
-                { uid, name },
-                { merge: true }
-            );
+            await db.collection("scores").doc(uid).set({ uid, name }, { merge: true });
             if (rankView.style.display === "block") {
                 loadLeaderboard();
             }
@@ -1216,7 +1181,6 @@ btnSaveName.addEventListener("click", async () => {
             console.error("닉네임 업데이트 실패:", e);
         }
     }
-
     alert("닉네임이 저장되었습니다. 이제 랭킹에도 이 이름으로 표시됩니다.");
 });
 
@@ -1234,7 +1198,6 @@ lbTabs.forEach(tab => {
     });
 });
 
-/* 초기화 */
 loadLocalSettings();
 initAuth();
 switchTopTab("game");

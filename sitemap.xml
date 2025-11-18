@@ -1,34 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://showoo10.github.io/brain-game/</loc>
-    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-
   <url>
     <loc>https://showoo10.github.io/brain-game/about.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
   </url>
-
   <url>
     <loc>https://showoo10.github.io/brain-game/howto.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
-
   <url>
     <loc>https://showoo10.github.io/brain-game/updates.html</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.6</priority>
   </url>
-
   <url>
     <loc>https://showoo10.github.io/brain-game/privacy.html</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
   </url>
-
+  <url>
+    <loc>https://showoo10.github.io/brain-game/terms.html</loc>
+    <priority>0.4</priority>
+  </url>
 </urlset>
